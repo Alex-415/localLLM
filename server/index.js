@@ -18,7 +18,7 @@ app.post("/api/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${process.env.REACT_APP_OPENROUTER_API_KEY}`,
       },
       body: JSON.stringify(req.body),
     });
@@ -37,5 +37,5 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Proxy server running at http://localhost:${PORT}`);
+  console.log(`✅ Proxy server running at ${PORT}`);
 });
