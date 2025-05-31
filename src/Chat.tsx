@@ -1,84 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Chat.css";
 
-const API_URL = "http://localhost:11434/api/generate"; // Your local LLM endpoint
+type Role = "user" | "assistant";
 
 interface Message {
-  sender: "user" | "bot";
-  text: string;
+  role: Role;
+  content: string;
 }
 
-const Chat: React.FC = () => {
+const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [prompt, setPrompt] = useState("");
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const sendPrompt = async () => {
-    if (!prompt.trim()) return;
-    const userMessage: Message = { sender: "user", text: prompt };
-    setMessages(prev => [...prev, userMessage]);
-    setPrompt("");
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const newMessages = [...messages, { role: "user", content: input }];
+    setMessages(newMessages);
+    setInput("");
     setLoading(true);
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch("http://localhost:4000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt,
-          model: "deepseek-coder", // or any you run
-          temperature: 0.7,
-          max_tokens: 256,
+          model: "gpt-4o-mini",
+          messages: newMessages,
         }),
       });
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let fullResponse = "";
+      const data = await res.json();
+      const reply = data.choices?.[0]?.message?.content || "No response";
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value);
-          fullResponse += chunk;
-        }
-      }
-
-      const botMessage: Message = { sender: "bot", text: fullResponse.trim() };
-      setMessages(prev => [...prev, botMessage]);
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch (err) {
-      setMessages(prev => [...prev, { sender: "bot", text: "Error fetching response." }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Error contacting the model." },
+      ]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendPrompt();
+      sendMessage();
     }
   };
 
   return (
     <div className="chat-wrapper">
-      <div className="chat-history">
-        {messages.map((msg, i) => (
-          <div key={i} className={`bubble ${msg.sender}`}>
-            {msg.text}
+      <div className="chat-window">
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`chat-bubble ${msg.role === "user" ? "user" : "assistant"}`}
+          >
+            {msg.content}
           </div>
         ))}
-        {loading && <div className="bubble bot">Thinking...</div>}
+        {loading && <div className="chat-bubble assistant">...</div>}
+        <div ref={bottomRef} />
       </div>
-      <div className="chat-input">
+
+      <div className="chat-input-area">
         <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={handleKeyDown}
+          className="chat-textarea"
           placeholder="Type your message..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={loading}
         />
-        <button onClick={sendPrompt} disabled={loading}>Send</button>
+        <button className="chat-send-button" onClick={sendMessage} disabled={loading}>
+          Send
+        </button>
       </div>
     </div>
   );
