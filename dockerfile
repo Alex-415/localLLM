@@ -1,26 +1,36 @@
-# Stage 1: Build React app
-FROM node:18 AS client-builder
-WORKDIR /app
-COPY client/package*.json ./client/
-RUN cd client && npm install
-COPY client ./client
-RUN cd client && npm run build
-
-# Stage 2: Set up backend server
-FROM node:18
+# Build stage
+FROM node:18 AS builder
 WORKDIR /app
 
-# Copy backend files
-COPY server/package*.json ./server/
-RUN cd server && npm install
-COPY server ./server
+# Install dependencies
+COPY package*.json ./
+RUN npm install
 
-# Copy built React app into backend's public directory
-COPY --from=client-builder /app/client/build ./server/public
+# Copy all source files
+COPY . .
 
-# Set env PORT for Render
+# Build React app
+RUN npm run build
+
+# Production stage
+FROM node:18-slim
+WORKDIR /app
+
+# Install serve for serving the React build
+RUN npm install -g serve
+
+# Copy build files from previous stage
+COPY --from=builder /app/build ./build
+
+# Copy backend code and package.json for backend dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy backend source files
+COPY . .
+
 ENV PORT=10000
 EXPOSE 10000
 
-# Start server
-CMD ["node", "server/index.js"]
+# Start backend server (change this if your backend start script is different)
+CMD ["node", "server.js"]
