@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "server": "node server/index.js",
-    "start": "concurrently \"npm run server\" \"npm run dev\""
+   "install": "cd client && npm install && cd ../server && npm install",
+    "build": "cd client && npm run build",
+    "start": "npm run build && node server/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
