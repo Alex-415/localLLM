@@ -1,10 +1,12 @@
 services:
   - type: web
-    name: fullstack-chatbot
+    name: private-llm
     env: docker
-    repo: https://github.com/YOUR_USERNAME/YOUR_REPO
+    repo: https://github.com/Alex-415/localLLM
     branch: main
     autoDeploy: true
+    buildCommand: docker build -t private-llm .
+    startCommand: docker run -p 10000:10000 private-llm
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false

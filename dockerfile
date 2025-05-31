@@ -2,14 +2,10 @@
 FROM node:18 AS builder
 WORKDIR /app
 
-# Install dependencies
+# Install client dependencies and build React app
 COPY package*.json ./
 RUN npm install
-
-# Copy all source files
 COPY . .
-
-# Build React app
 RUN npm run build
 
 # Production stage
@@ -19,18 +15,16 @@ WORKDIR /app
 # Install serve for serving the React build
 RUN npm install -g serve
 
-# Copy build files from previous stage
-COPY --from=builder /app/build ./build
+# Copy client build files from previous stage
+COPY --from=builder /app/build ./client/build
 
-# Copy backend code and package.json for backend dependencies
-COPY package*.json ./
-RUN npm install --production
-
-# Copy backend source files
-COPY . .
+# Copy server code and install server dependencies
+COPY server/package*.json ./server/
+RUN npm install --prefix ./server --production
+COPY server/ . /server/
 
 ENV PORT=10000
 EXPOSE 10000
 
 # Start backend server (change this if your backend start script is different)
-CMD ["node", "server.js"]
+CMD ["node", "server/index.js"]

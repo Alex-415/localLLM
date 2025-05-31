@@ -21,7 +21,7 @@ const Chat = () => {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [...messages, { role: "user", content: input }];
+    const newMessages = [...messages, { role: "user" as Role, content: input }];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
@@ -39,7 +39,7 @@ const Chat = () => {
       const data = await res.json();
       const reply = data.choices?.[0]?.message?.content || "No response";
 
-      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      setMessages((prev) => [...prev, { role: "assistant" as Role, content: reply }]);
     } catch (err) {
       setMessages((prev) => [
         ...prev,
