@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the React app
-app.use('/', express.static(path.join(__dirname, '..', 'client', 'build')));
+app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
 
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -56,7 +56,9 @@ app.post("/api/chat", async (req, res) => {
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": `http://localhost:${PORT}`,
+      "HTTP-Referer": process.env.NODE_ENV === 'production' 
+        ? 'https://private-llm.onrender.com' 
+        : `http://localhost:${PORT}`,
       "X-Title": "Private LLM App"
     };
     
@@ -93,7 +95,10 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// No catch-all route here, express.static('/') should handle client-side routing
+// Catch-all route to serve the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`✅ Proxy server running at ${PORT}`);

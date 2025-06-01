@@ -12,9 +12,6 @@ RUN npm run build
 FROM node:18-slim
 WORKDIR /app
 
-# Install serve for serving the React build
-RUN npm install -g serve
-
 # Copy client build files from previous stage
 COPY --from=builder /app/dist ./client/build
 
