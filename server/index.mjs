@@ -24,9 +24,7 @@ console.log("API Key prefix:", process.env.OPENROUTER_API_KEY ? process.env.OPEN
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
-
+// API routes
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -95,8 +93,11 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// Serve the React app for all other routes
-app.get('/*', (req, res) => {
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+
+// Handle all other routes by serving the React app
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
 });
 
