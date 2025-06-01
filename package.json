@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
    "build": "vite build",
-    "start": "npm run build && node server/index.js"
+    "start": "npm run build && node server/index.mjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

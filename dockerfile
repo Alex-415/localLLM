@@ -25,6 +25,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY server/index.mjs ./server/
 
 ENV PORT=10000
+ENV NODE_ENV=production
+
 EXPOSE 10000
 
 # Start backend server
