@@ -21,6 +21,10 @@ console.log("PORT:", process.env.PORT);
 console.log("API Key present:", !!process.env.OPENROUTER_API_KEY);
 console.log("API Key prefix:", process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.substring(0, 10) + "..." : "Not set");
 
+// Log the build directory path
+const buildPath = path.join(__dirname, '..', 'dist');
+console.log("Build directory path:", buildPath);
+
 app.use(cors());
 app.use(express.json());
 
@@ -94,11 +98,11 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+app.use(express.static(buildPath));
 
 // Handle all other routes by serving the React app
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 app.listen(PORT, () => {

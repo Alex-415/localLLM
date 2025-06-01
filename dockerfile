@@ -12,14 +12,8 @@ RUN npm run build
 FROM node:18-slim
 WORKDIR /app
 
-# Copy client build files from previous stage
-COPY --from=builder /app/dist ./client/build
-
-# Copy node_modules from builder stage
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy server code
-COPY server/index.mjs ./server/
+# Copy the entire app from builder stage
+COPY --from=builder /app ./
 
 ENV PORT=10000
 ENV NODE_ENV=production
