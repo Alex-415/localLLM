@@ -59,6 +59,7 @@ const Chat = () => {
 
   return (
     <div className="chat-wrapper">
+      <div className="chat-header">KML Production</div>
       <div className="chat-window">
         {messages.map((msg, idx) => (
           <div
