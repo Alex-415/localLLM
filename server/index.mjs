@@ -3,9 +3,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import path from "path";
+import { fileURLToPath } from 'url';
 
 // Load env variables from .env file
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -14,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+app.use('/', express.static(path.join(__dirname, '..', 'client', 'build')));
 
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
@@ -44,9 +48,7 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
-});
+// No catch-all route here, express.static('/') should handle client-side routing
 
 app.listen(PORT, () => {
   console.log(`✅ Proxy server running at ${PORT}`);
