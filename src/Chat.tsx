@@ -103,7 +103,6 @@ const Chat = () => {
   return (
     <div className="chat-wrapper">
       <div className="chat-header">
-        <span>KML Production</span>
         <button 
           onClick={clearHistory}
           className="clear-history-button"
@@ -111,6 +110,7 @@ const Chat = () => {
         >
           Clear History
         </button>
+        <span>KML Production</span>
       </div>
       <div className="chat-window">
         {messages.map((msg, idx) => (
