@@ -10,7 +10,7 @@ interface Message {
 }
 
 const STORAGE_KEY = 'chat_messages';
-const API_BASE_URL = import.meta.env.PROD ? 'https://your-render-app.onrender.com' : '';
+const API_BASE_URL = import.meta.env.PROD ? 'https://localllm.onrender.com' : '';
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
