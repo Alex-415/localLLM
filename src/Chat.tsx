@@ -10,6 +10,7 @@ interface Message {
 }
 
 const STORAGE_KEY = 'chat_messages';
+const API_BASE_URL = import.meta.env.PROD ? 'https://your-render-app.onrender.com' : '';
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -52,7 +53,7 @@ const Chat = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
