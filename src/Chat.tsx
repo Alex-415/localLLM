@@ -6,10 +6,21 @@ type Role = "user" | "assistant";
 interface Message {
   role: Role;
   content: string;
+  timestamp: number;
 }
 
+const STORAGE_KEY = 'chat_messages';
+
 const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const savedMessages = localStorage.getItem(STORAGE_KEY);
+      return savedMessages ? JSON.parse(savedMessages) : [];
+    } catch (error) {
+      console.error('Error loading messages from localStorage:', error);
+      return [];
+    }
+  });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -18,10 +29,24 @@ const Chat = () => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch (error) {
+      console.error('Error saving messages to localStorage:', error);
+    }
+  }, [messages]);
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [...messages, { role: "user" as Role, content: input }];
+    const newMessage: Message = { 
+      role: "user", 
+      content: input,
+      timestamp: Date.now()
+    };
+    
+    const newMessages = [...messages, newMessage];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
@@ -32,18 +57,26 @@ const Chat = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: newMessages,
+          messages: newMessages.map(({ role, content }) => ({ role, content })),
         }),
       });
 
       const data = await res.json();
       const reply = data.choices?.[0]?.message?.content || "No response";
 
-      setMessages((prev) => [...prev, { role: "assistant" as Role, content: reply }]);
+      setMessages((prev) => [...prev, { 
+        role: "assistant", 
+        content: reply,
+        timestamp: Date.now()
+      }]);
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Error contacting the model." },
+        { 
+          role: "assistant", 
+          content: "Error contacting the model.",
+          timestamp: Date.now()
+        },
       ]);
     } finally {
       setLoading(false);
@@ -57,9 +90,27 @@ const Chat = () => {
     }
   };
 
+  const clearHistory = () => {
+    setMessages([]);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    } catch (error) {
+      console.error('Error clearing localStorage:', error);
+    }
+  };
+
   return (
     <div className="chat-wrapper">
-      <div className="chat-header">KML Production</div>
+      <div className="chat-header">
+        <span>KML Production</span>
+        <button 
+          onClick={clearHistory}
+          className="clear-history-button"
+          title="Clear chat history"
+        >
+          Clear History
+        </button>
+      </div>
       <div className="chat-window">
         {messages.map((msg, idx) => (
           <div
