@@ -16,7 +16,15 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
-      port: 5173
+      port: 5173,
+      proxy: {
+        '/api': {
+          target: 'https://localllm.onrender.com',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path
+        }
+      }
     },
     preview: {
       port: 5173,
@@ -42,6 +50,10 @@ export default defineConfig(({ mode }) => {
         VITE_FIREBASE_MESSAGING_SENDER_ID: JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
         VITE_FIREBASE_APP_ID: JSON.stringify(env.VITE_FIREBASE_APP_ID),
       },
+    },
+    build: {
+      outDir: 'dist',
+      sourcemap: true
     }
   }
 })
