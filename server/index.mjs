@@ -81,7 +81,8 @@ app.use((req, res, next) => {
     body: req.body,
     hostname: req.hostname,
     protocol: req.protocol,
-    origin: req.headers.origin
+    origin: req.headers.origin,
+    url: req.url
   });
   next();
 });

@@ -46,8 +46,10 @@ const Chat: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Origin': window.location.origin
         },
+        credentials: 'include',
         body: JSON.stringify({
           messages: [...messages, userMessage],
         }),
@@ -62,7 +64,8 @@ const Chat: React.FC = () => {
           status: response.status,
           statusText: response.statusText,
           error: errorData,
-          url: apiUrl
+          url: apiUrl,
+          headers: Object.fromEntries(response.headers.entries())
         });
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
