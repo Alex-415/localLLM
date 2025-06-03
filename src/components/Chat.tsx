@@ -35,7 +35,10 @@ const Chat: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const apiUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:4000'
+        : 'https://localllm.onrender.com';
+      
       console.log('Sending request to:', apiUrl);
       
       const response = await fetch(`${apiUrl}/api/chat`, {
