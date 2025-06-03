@@ -13,7 +13,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
-        value: https://private-llm.onrender.com
+        value: https://localllm.onrender.com
+      - key: BASE_URL
+        value: https://localllm.onrender.com
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET

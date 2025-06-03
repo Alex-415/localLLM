@@ -131,12 +131,14 @@ apiRouter.post('/chat', async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://localllm.onrender.com',
+        'HTTP-Referer': process.env.BASE_URL || 'https://localllm.onrender.com',
         'X-Title': 'LocalLLM'
       },
       body: JSON.stringify({
         model: 'meta-llama/llama-3.1-8b-instruct:free',
-        messages: messages
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1000
       })
     });
 
@@ -147,8 +149,19 @@ apiRouter.post('/chat', async (req, res) => {
       console.error('OpenRouter API error:', {
         status: response.status,
         statusText: response.statusText,
-        error: errorText
+        error: errorText,
+        headers: response.headers
       });
+      
+      // Handle specific error cases
+      if (response.status === 401) {
+        return res.status(401).json({ error: 'Invalid API key' });
+      } else if (response.status === 429) {
+        return res.status(429).json({ error: 'Rate limit exceeded' });
+      } else if (response.status === 503) {
+        return res.status(503).json({ error: 'Service temporarily unavailable' });
+      }
+      
       return res.status(response.status).json({ 
         error: 'OpenRouter API error',
         details: errorText
@@ -164,13 +177,16 @@ apiRouter.post('/chat', async (req, res) => {
     }
 
     res.json({
-      message: data.choices[0].message.content
+      message: data.choices[0].message.content,
+      model: data.model,
+      usage: data.usage
     });
   } catch (error) {
     console.error('Error in chat endpoint:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      details: error.message
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
