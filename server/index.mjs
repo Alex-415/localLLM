@@ -124,6 +124,8 @@ apiRouter.post('/chat', async (req, res) => {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
+    console.log('Sending request to OpenRouter with messages:', messages);
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -137,6 +139,8 @@ apiRouter.post('/chat', async (req, res) => {
         messages: messages
       })
     });
+
+    console.log('OpenRouter response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -152,7 +156,7 @@ apiRouter.post('/chat', async (req, res) => {
     }
 
     const data = await response.json();
-    console.log('OpenRouter response:', data);
+    console.log('OpenRouter response data:', data);
 
     if (!data.choices || !data.choices[0]?.message?.content) {
       console.error('Invalid response from OpenRouter:', data);
