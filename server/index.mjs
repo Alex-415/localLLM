@@ -57,7 +57,7 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -79,7 +79,8 @@ app.use((req, res, next) => {
     headers: req.headers,
     body: req.body,
     hostname: req.hostname,
-    protocol: req.protocol
+    protocol: req.protocol,
+    origin: req.headers.origin
   });
   next();
 });
@@ -96,7 +97,8 @@ apiRouter.get('/health', (req, res) => {
     baseUrl: BASE_URL,
     environment: process.env.NODE_ENV,
     port: PORT,
-    hostname: req.hostname
+    hostname: req.hostname,
+    origin: req.headers.origin
   });
 });
 
@@ -106,7 +108,8 @@ apiRouter.post('/chat', async (req, res) => {
     body: req.body,
     headers: req.headers,
     hostname: req.hostname,
-    protocol: req.protocol
+    protocol: req.protocol,
+    origin: req.headers.origin
   });
 
   try {

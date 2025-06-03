@@ -55,12 +55,15 @@ const Chat = () => {
     setError(null);
 
     try {
-      console.log('Sending request to:', `${API_BASE_URL}/api/chat`);
-      const res = await fetch(`${API_BASE_URL}/api/chat`, {
+      const apiUrl = `${API_BASE_URL}/api/chat`;
+      console.log('Sending request to:', apiUrl);
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          "Accept": "application/json",
+          "Origin": window.location.origin
         },
         body: JSON.stringify({
           messages: newMessages.map(({ role, content }) => ({ role, content })),
