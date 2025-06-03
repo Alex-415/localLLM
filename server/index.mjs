@@ -78,8 +78,11 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Chat endpoint - handle both /api/chat and /chat
-app.post(['/api/chat', '/chat'], async (req, res) => {
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '..', 'dist')));
+
+// Handle API routes first
+app.post('/api/chat', async (req, res) => {
   try {
     console.log('Received chat request:', {
       headers: req.headers,
@@ -182,12 +185,9 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
   }
 });
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'dist')));
-
 // Handle all other routes by serving the React app
-app.use((req, res) => {
-  res.sendFile(path.join(path.join(__dirname, '..', 'dist'), 'index.html'));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {

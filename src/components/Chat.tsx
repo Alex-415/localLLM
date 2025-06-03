@@ -39,12 +39,13 @@ const Chat: React.FC = () => {
         ? 'http://localhost:4000'
         : 'https://localllm.onrender.com';
       
-      console.log('Sending request to:', apiUrl);
+      console.log('Sending request to:', `${apiUrl}/api/chat`);
       
       const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           messages: [...messages, userMessage].map(m => ({
