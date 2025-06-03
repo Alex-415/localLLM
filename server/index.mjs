@@ -82,8 +82,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// API Routes
+const apiRouter = express.Router();
+
 // Health check endpoint
-app.get('/health', (req, res) => {
+apiRouter.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
     env: {
@@ -97,8 +100,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Chat endpoint - handle both /api/chat and /chat
-app.post(['/api/chat', '/chat'], async (req, res) => {
+// Chat endpoint
+apiRouter.post('/chat', async (req, res) => {
   try {
     console.log('Received chat request:', {
       headers: req.headers,
@@ -209,6 +212,9 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
     });
   }
 });
+
+// Mount API routes
+app.use('/api', apiRouter);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '..', 'dist')));
