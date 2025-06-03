@@ -35,9 +35,7 @@ const Chat: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:4000'
-        : 'https://localllm.onrender.com';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://localllm.onrender.com';
       
       console.log('Sending request to:', `${apiUrl}/api/chat`);
       
@@ -88,14 +86,14 @@ const Chat: React.FC = () => {
 
       console.log('Server response:', data);
 
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      if (!data.message) {
         console.error('Invalid response format:', data);
         throw new Error('Invalid response format from server');
       }
 
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: data.message,
         timestamp: Date.now()
       };
 

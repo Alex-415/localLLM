@@ -211,8 +211,15 @@ app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({ 
     error: 'Internal server error',
-    details: err.message
+    details: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
+});
+
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+  console.error('API route not found:', req.originalUrl);
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
 app.listen(PORT, () => {
