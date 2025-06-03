@@ -135,7 +135,7 @@ apiRouter.post('/chat', async (req, res) => {
         'X-Title': 'LocalLLM'
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-coder:free',
+        model: 'meta-llama/llama-3.1-8b-instruct:free',
         messages: messages
       })
     });
