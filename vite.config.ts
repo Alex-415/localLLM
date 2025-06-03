@@ -8,13 +8,18 @@ export default defineConfig(({ mode }) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '')
   
+  // Determine the API URL based on the environment
+  const apiUrl = mode === 'production' 
+    ? 'https://localllm.onrender.com'  // Your Render.com URL
+    : 'http://localhost:4000'
+  
   return {
     plugins: [react()],
     server: {
       port: 5173,
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'http://localhost:4000',
+          target: apiUrl,
           changeOrigin: true,
           secure: false,
         },
@@ -36,7 +41,7 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       'process.env': {
-        VITE_API_URL: JSON.stringify(env.VITE_API_URL || 'http://localhost:4000'),
+        VITE_API_URL: JSON.stringify(apiUrl),
         VITE_FIREBASE_API_KEY: JSON.stringify(env.VITE_FIREBASE_API_KEY),
         VITE_FIREBASE_AUTH_DOMAIN: JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
         VITE_FIREBASE_PROJECT_ID: JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),

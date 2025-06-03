@@ -27,7 +27,7 @@ const allowedOrigins = [
   'https://alex-415.github.io/localLLM',
   'http://localhost:5173',
   'http://localhost',
-  'https://private-llm.onrender.com',
+  'https://localllm.onrender.com',
   'https://*.onrender.com'
 ];
 
