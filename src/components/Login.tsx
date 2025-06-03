@@ -1,23 +1,25 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { auth } from '../firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const Login: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
   const navigate = useNavigate();
   const { user, signInWithGoogle } = useAuth();
 
   useEffect(() => {
+    console.log('Login component mounted, current user:', user);
     // Redirect if user is already logged in
     if (user) {
+      console.log('User is logged in, redirecting to home');
       navigate('/');
     }
   }, [user, navigate]);
 
   const getErrorMessage = (error: any): string => {
+    console.log('Processing error:', error);
     switch (error.code) {
       case 'auth/popup-closed-by-user':
         return 'Sign-in popup was closed before completing the sign-in.';
@@ -25,6 +27,10 @@ const Login: React.FC = () => {
         return 'Multiple popup requests were made. Please try again.';
       case 'auth/popup-blocked':
         return 'The popup was blocked by the browser. Please allow popups for this site.';
+      case 'auth/network-request-failed':
+        return 'Network error occurred. Please check your internet connection.';
+      case 'auth/unauthorized-domain':
+        return 'This domain is not authorized for Firebase authentication.';
       default:
         return error.message || 'An error occurred. Please try again.';
     }
@@ -32,10 +38,18 @@ const Login: React.FC = () => {
 
   const handleGoogleSignIn = async () => {
     try {
+      console.log('Starting Google sign in process...');
+      setIsLoading(true);
+      setError(null);
+      
       await signInWithGoogle();
+      console.log('Google sign in successful, redirecting...');
       navigate('/');
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
+    } catch (error: any) {
+      console.error('Error during Google sign in:', error);
+      setError(getErrorMessage(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,6 +97,7 @@ const Login: React.FC = () => {
         <button
           onClick={handleGoogleSignIn}
           className="google-signin-button"
+          disabled={isLoading}
           style={{
             width: '100%',
             padding: '0.875rem',
@@ -91,13 +106,14 @@ const Login: React.FC = () => {
             border: 'none',
             borderRadius: '8px',
             fontSize: '1rem',
-            cursor: 'pointer',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.75rem',
             fontWeight: '500',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            opacity: isLoading ? 0.7 : 1
           }}
         >
           <img 
@@ -105,7 +121,7 @@ const Login: React.FC = () => {
             alt="Google" 
             style={{ width: '20px', height: '20px' }}
           />
-          Continue with Google
+          {isLoading ? 'Signing in...' : 'Continue with Google'}
         </button>
 
         <p style={{ 
