@@ -44,7 +44,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// API routes
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -56,7 +56,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.post('/api/chat', async (req, res) => {
+// Chat endpoint - handle both /api/chat and /chat
+app.post(['/api/chat', '/chat'], async (req, res) => {
   try {
     console.log('Received chat request:', {
       headers: req.headers,
@@ -132,7 +133,7 @@ app.post('/api/chat', async (req, res) => {
     console.log('OpenRouter API response:', responseData);
     res.json(responseData);
   } catch (error) {
-    console.error('Error in /api/chat:', error);
+    console.error('Error in chat endpoint:', error);
     res.status(500).json({ 
       error: error.message || 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
