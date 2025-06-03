@@ -32,6 +32,7 @@ const Chat: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setError(null);
 
     try {
       // Get the base URL from environment or use window.location
@@ -45,18 +46,23 @@ const Chat: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           messages: [...messages, userMessage],
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('API Error:', {
           status: response.status,
           statusText: response.statusText,
-          error: errorData
+          error: errorData,
+          url: apiUrl
         });
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
@@ -65,6 +71,7 @@ const Chat: React.FC = () => {
       console.log('API Response:', data);
 
       if (!data || !data.response) {
+        console.error('Invalid response format:', data);
         throw new Error('Invalid response format from API');
       }
 

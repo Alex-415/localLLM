@@ -110,7 +110,10 @@ apiRouter.post('/chat', async (req, res) => {
     headers: req.headers,
     hostname: req.hostname,
     protocol: req.protocol,
-    origin: req.headers.origin
+    origin: req.headers.origin,
+    url: req.originalUrl,
+    path: req.path,
+    baseUrl: req.baseUrl
   });
 
   try {
@@ -177,8 +180,9 @@ apiRouter.post('/chat', async (req, res) => {
       return res.status(500).json({ error: 'Invalid response from OpenRouter' });
     }
 
+    // Match the expected response format
     res.json({
-      message: data.choices[0].message.content,
+      response: data.choices[0].message.content,
       model: data.model,
       usage: data.usage
     });
