@@ -87,6 +87,7 @@ const apiRouter = express.Router();
 
 // Health check endpoint
 apiRouter.get('/health', (req, res) => {
+  console.log('Health check requested');
   res.status(200).json({
     status: 'OK',
     env: {
@@ -213,7 +214,7 @@ apiRouter.post('/chat', async (req, res) => {
   }
 });
 
-// Mount API routes
+// Mount API routes BEFORE static file serving
 app.use('/api', apiRouter);
 
 // Serve static files from the React app
