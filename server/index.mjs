@@ -236,7 +236,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+// Start the server
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Server configuration:', {
     NODE_ENV: process.env.NODE_ENV,
@@ -244,5 +245,23 @@ app.listen(PORT, () => {
     BASE_URL,
     CORS_ORIGINS: allowedOrigins,
     API_ROUTES: ['/api/chat', '/api/health']
+  });
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error('Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+    process.exit(1);
+  }
+});
+
+// Handle process termination
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
   });
 });

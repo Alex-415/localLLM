@@ -20,91 +20,64 @@ const Chat: React.FC = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!input.trim()) return;
 
     const userMessage: Message = {
       role: 'user',
-      content: input.trim(),
+      content: input,
       timestamp: Date.now()
     };
-
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    setError(null);
 
     try {
-      // Ensure we have a valid API URL
-      const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'https://localllm.onrender.com';
-      
-      console.log('API URL:', apiUrl);
-      console.log('Sending request to:', `${apiUrl}/api/chat`);
-      
-      const response = await fetch(`${apiUrl}/api/chat`, {
+      // Get the base URL from environment or use window.location
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const apiUrl = `${baseUrl}/api/chat`;
+
+      console.log('Sending request to:', apiUrl);
+      console.log('Request payload:', { messages: [...messages, userMessage] });
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Origin': window.location.origin
         },
-        credentials: 'include',
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
-            role: m.role,
-            content: m.content
-          }))
+          messages: [...messages, userMessage],
         }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      let data;
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-      
-      if (!responseText) {
-        console.error('Empty response from server');
-        throw new Error('Empty response from server');
-      }
-
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Failed to parse server response:', {
-          responseText,
-          error: parseError
-        });
-        throw new Error(`Invalid response from server: ${responseText}`);
-      }
-
       if (!response.ok) {
-        console.error('Server error:', {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', {
           status: response.status,
           statusText: response.statusText,
-          data
+          error: errorData
         });
-        throw new Error(data.error || `Server error: ${response.status} ${response.statusText}`);
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
 
-      console.log('Server response:', data);
+      const data = await response.json();
+      console.log('API Response:', data);
 
-      if (!data.message) {
-        console.error('Invalid response format:', data);
-        throw new Error('Invalid response format from server');
+      if (!data || !data.response) {
+        throw new Error('Invalid response format from API');
       }
 
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.message,
+        content: data.response,
         timestamp: Date.now()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (err) {
-      console.error('Error sending message:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +86,7 @@ const Chat: React.FC = () => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSubmit(e);
     }
   };
 
@@ -169,7 +142,7 @@ const Chat: React.FC = () => {
             disabled={isLoading}
           />
           <button
-            onClick={handleSend}
+            onClick={handleSubmit}
             className="send-button"
             disabled={isLoading || !input.trim()}
           >
