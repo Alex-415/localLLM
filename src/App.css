@@ -1,7 +1,8 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
@@ -43,8 +44,25 @@
 
 .app {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background-color: #0d1117;
   color: #c9d1d9;
+  padding: 2rem;
+  text-align: center;
+}
+
+.app h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #58a6ff;
+}
+
+.app p {
+  font-size: 1.2rem;
+  color: #8b949e;
 }
 
 .header {
@@ -85,4 +103,20 @@
 .logout-button:hover {
   background-color: #30363d;
   border-color: #8b949e;
+}
+
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0d1117;
+  color: #c9d1d9;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.2rem;
+  color: #c9d1d9;
 }

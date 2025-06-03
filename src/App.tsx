@@ -1,40 +1,36 @@
 import React from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Chat from './Chat';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import Chat from './components/Chat';
 import Login from './components/Login';
 import './App.css';
 
-const AppContent: React.FC = () => {
-  const { user, logout } = useAuth();
+function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
-      {user ? (
-        <>
-          <div className="header">
-            <h1>KML Production</h1>
-            <div className="user-info">
-              <span>Welcome, {user.email}</span>
-              <button onClick={logout} className="logout-button">
-                Logout
-              </button>
-            </div>
-          </div>
-          <Chat />
-        </>
-      ) : (
-        <Login />
-      )}
+      <Routes>
+        <Route 
+          path="/" 
+          element={user ? <Chat /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/login" 
+          element={!user ? <Login /> : <Navigate to="/" />} 
+        />
+      </Routes>
     </div>
   );
-};
-
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
-};
+}
 
 export default App;

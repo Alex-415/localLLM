@@ -10,7 +10,7 @@ interface Message {
 }
 
 const STORAGE_KEY = 'chat_messages';
-const API_BASE_URL = import.meta.env.PROD ? 'https://localllm.onrender.com' : '';
+const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:3002';
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -24,6 +24,7 @@ const Chat = () => {
   });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,31 +52,47 @@ const Chat = () => {
     setMessages(newMessages);
     setInput("");
     setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "gpt-3.5-turbo",
           messages: newMessages.map(({ role, content }) => ({ role, content })),
         }),
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to get response from server');
+      }
+
       const data = await res.json();
-      const reply = data.choices?.[0]?.message?.content || "No response";
+
+      if (!data.choices?.[0]?.message?.content) {
+        throw new Error('Invalid response format from server');
+      }
+
+      const reply = data.choices[0].message.content;
 
       setMessages((prev) => [...prev, { 
         role: "assistant", 
         content: reply,
         timestamp: Date.now()
       }]);
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Error in sendMessage:', err);
+      setError(err.message || "Error contacting the model.");
       setMessages((prev) => [
         ...prev,
         { 
           role: "assistant", 
-          content: "Error contacting the model.",
+          content: err.message || "Error contacting the model.",
           timestamp: Date.now()
         },
       ]);
@@ -93,6 +110,7 @@ const Chat = () => {
 
   const clearHistory = () => {
     setMessages([]);
+    setError(null);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     } catch (error) {
@@ -103,14 +121,18 @@ const Chat = () => {
   return (
     <div className="chat-wrapper">
       <div className="chat-header">
-        <span>KML Production</span>
-        <button 
-          onClick={clearHistory}
-          className="clear-history-button"
-          title="Clear chat history"
-        >
-          Clear History
-        </button>
+        <div className="header-left">
+          <span>KML Production</span>
+        </div>
+        <div className="header-right">
+          <button 
+            onClick={clearHistory}
+            className="clear-history-button"
+            title="Clear chat history"
+          >
+            Clear History
+          </button>
+        </div>
       </div>
       <div className="chat-window">
         {messages.map((msg, idx) => (
@@ -121,7 +143,8 @@ const Chat = () => {
             {msg.content}
           </div>
         ))}
-        {loading && <div className="chat-bubble assistant">...</div>}
+        {loading && <div className="chat-bubble assistant">Thinking...</div>}
+        {error && <div className="chat-bubble assistant error">{error}</div>}
         <div ref={bottomRef} />
       </div>
 
@@ -134,7 +157,11 @@ const Chat = () => {
           onKeyDown={handleKeyDown}
           disabled={loading}
         />
-        <button className="chat-send-button" onClick={sendMessage} disabled={loading}>
+        <button 
+          className="chat-send-button" 
+          onClick={sendMessage} 
+          disabled={loading || !input.trim()}
+        >
           Send
         </button>
       </div>
