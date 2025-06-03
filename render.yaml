@@ -6,7 +6,7 @@ services:
     branch: master
     autoDeploy: true
     buildCommand: docker build -t private-llm .
-    startCommand: docker run -p 10000:10000 private-llm
+    startCommand: docker run -p 10000:10000 -p 9229:9229 private-llm
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false
@@ -39,4 +39,4 @@ services:
     numInstances: 1
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    dockerCommand: node --trace-warnings index.mjs
+    dockerCommand: node --trace-warnings --inspect=0.0.0.0:9229 index.mjs
