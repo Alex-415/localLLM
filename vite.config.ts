@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       allowedHosts: [
         'localhost',
-        'localllm.onrender.com',
+        'private-llm.onrender.com',
         '.onrender.com'
       ],
     },

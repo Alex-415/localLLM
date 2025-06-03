@@ -91,7 +91,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
 
     console.log('Request body:', { messages });
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch(openRouterUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
