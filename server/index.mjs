@@ -69,10 +69,17 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: 'Invalid request body' });
     }
 
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error('OpenRouter API key is not set');
+      return res.status(500).json({ error: 'API key not configured' });
+    }
+
     console.log('Making request to OpenRouter with headers:', {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer [REDACTED]',
-      'HTTP-Referer': 'http://localhost:4000',
+      'HTTP-Referer': process.env.NODE_ENV === 'production' 
+        ? 'https://localllm.onrender.com'
+        : 'http://localhost:4000',
       'X-Title': 'Private LLM App'
     });
 
@@ -83,7 +90,9 @@ app.post('/api/chat', async (req, res) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'http://localhost:4000',
+        'HTTP-Referer': process.env.NODE_ENV === 'production' 
+          ? 'https://localllm.onrender.com'
+          : 'http://localhost:4000',
         'X-Title': 'Private LLM App'
       },
       body: JSON.stringify({
@@ -92,23 +101,42 @@ app.post('/api/chat', async (req, res) => {
       })
     });
 
+    let responseData;
+    const responseText = await response.text();
+    
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse OpenRouter response:', {
+        status: response.status,
+        statusText: response.statusText,
+        responseText
+      });
+      throw new Error('Invalid response from OpenRouter API');
+    }
+
     if (!response.ok) {
-      const errorText = await response.text();
       console.error('OpenRouter API error:', {
         status: response.status,
         statusText: response.statusText,
-        error: errorText
+        error: responseData
       });
       throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log('OpenRouter API response:', data);
+    if (!responseData.choices || !responseData.choices[0] || !responseData.choices[0].message) {
+      console.error('Invalid response format from OpenRouter:', responseData);
+      throw new Error('Invalid response format from OpenRouter API');
+    }
 
-    res.json(data);
+    console.log('OpenRouter API response:', responseData);
+    res.json(responseData);
   } catch (error) {
     console.error('Error in /api/chat:', error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    res.status(500).json({ 
+      error: error.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

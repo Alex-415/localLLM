@@ -54,13 +54,21 @@ const Chat: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error:', errorData);
-        throw new Error(errorData.error || 'Failed to get response');
+      let data;
+      const responseText = await response.text();
+      
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse server response:', responseText);
+        throw new Error('Invalid response from server');
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        console.error('Server error:', data);
+        throw new Error(data.error || 'Failed to get response');
+      }
+
       console.log('Server response:', data);
 
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
