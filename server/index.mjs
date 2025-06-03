@@ -27,7 +27,7 @@ const allowedOrigins = [
   'https://alex-415.github.io/localLLM',
   'http://localhost:5173',
   'http://localhost',
-  'https://localllm.onrender.com',
+  'https://private-llm.onrender.com',
   'https://*.onrender.com'
 ];
 
@@ -61,7 +61,8 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
   try {
     console.log('Received chat request:', {
       headers: req.headers,
-      body: req.body
+      body: req.body,
+      url: req.url
     });
 
     const { messages } = req.body;
@@ -75,13 +76,17 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    console.log('Making request to OpenRouter with headers:', {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer [REDACTED]',
-      'HTTP-Referer': process.env.NODE_ENV === 'production' 
-        ? 'https://localllm.onrender.com'
-        : 'http://localhost:4000',
-      'X-Title': 'KML Production'
+    const openRouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    console.log('Making request to OpenRouter:', {
+      url: openRouterUrl,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer [REDACTED]',
+        'HTTP-Referer': process.env.NODE_ENV === 'production' 
+          ? 'https://private-llm.onrender.com'
+          : 'http://localhost:4000',
+        'X-Title': 'KML Production'
+      }
     });
 
     console.log('Request body:', { messages });
@@ -92,7 +97,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'HTTP-Referer': process.env.NODE_ENV === 'production' 
-          ? 'https://localllm.onrender.com'
+          ? 'https://private-llm.onrender.com'
           : 'http://localhost:4000',
         'X-Title': 'KML Production'
       },
@@ -102,8 +107,12 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
       })
     });
 
+    console.log('OpenRouter response status:', response.status);
+    console.log('OpenRouter response headers:', response.headers);
+
     let responseData;
     const responseText = await response.text();
+    console.log('OpenRouter raw response:', responseText);
     
     try {
       responseData = JSON.parse(responseText);
@@ -111,9 +120,13 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
       console.error('Failed to parse OpenRouter response:', {
         status: response.status,
         statusText: response.statusText,
-        responseText
+        responseText,
+        error: parseError
       });
-      throw new Error('Invalid response from OpenRouter API');
+      return res.status(500).json({ 
+        error: 'Invalid response from OpenRouter API',
+        details: process.env.NODE_ENV === 'development' ? responseText : undefined
+      });
     }
 
     if (!response.ok) {
@@ -122,15 +135,21 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         statusText: response.statusText,
         error: responseData
       });
-      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+      return res.status(response.status).json({ 
+        error: `OpenRouter API error: ${response.status} ${response.statusText}`,
+        details: process.env.NODE_ENV === 'development' ? responseData : undefined
+      });
     }
 
     if (!responseData.choices || !responseData.choices[0] || !responseData.choices[0].message) {
       console.error('Invalid response format from OpenRouter:', responseData);
-      throw new Error('Invalid response format from OpenRouter API');
+      return res.status(500).json({ 
+        error: 'Invalid response format from OpenRouter API',
+        details: process.env.NODE_ENV === 'development' ? responseData : undefined
+      });
     }
 
-    console.log('OpenRouter API response:', responseData);
+    console.log('Successfully processed OpenRouter response:', responseData);
     res.json(responseData);
   } catch (error) {
     console.error('Error in chat endpoint:', error);

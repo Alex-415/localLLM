@@ -37,7 +37,7 @@ const Chat: React.FC = () => {
     try {
       const apiUrl = window.location.hostname === 'localhost' 
         ? 'http://localhost:4000'
-        : 'https://localllm.onrender.com';
+        : 'https://private-llm.onrender.com';
       
       console.log('Sending request to:', apiUrl);
       
@@ -54,26 +54,37 @@ const Chat: React.FC = () => {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       let data;
       const responseText = await response.text();
+      console.log('Raw response:', responseText);
       
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {
-        console.error('Failed to parse server response:', responseText);
-        throw new Error('Invalid response from server');
+        console.error('Failed to parse server response:', {
+          responseText,
+          error: parseError
+        });
+        throw new Error(`Invalid response from server: ${responseText}`);
       }
 
       if (!response.ok) {
-        console.error('Server error:', data);
-        throw new Error(data.error || 'Failed to get response');
+        console.error('Server error:', {
+          status: response.status,
+          statusText: response.statusText,
+          data
+        });
+        throw new Error(data.error || `Server error: ${response.status} ${response.statusText}`);
       }
 
       console.log('Server response:', data);
 
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
         console.error('Invalid response format:', data);
-        throw new Error('Invalid response from server');
+        throw new Error('Invalid response format from server');
       }
 
       const assistantMessage: Message = {

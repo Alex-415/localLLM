@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   
   // Determine the API URL based on the environment
   const apiUrl = mode === 'production' 
-    ? 'https://localllm.onrender.com'  // Your Render.com URL
+    ? 'https://private-llm.onrender.com'  // Updated Render.com URL
     : 'http://localhost:4000'
   
   return {
