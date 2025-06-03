@@ -56,50 +56,59 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.post("/api/chat", async (req, res) => {
+app.post('/api/chat', async (req, res) => {
   try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      console.error("No API key found in environment variables");
-      return res.status(500).json({ error: "API key not configured" });
+    console.log('Received chat request:', {
+      headers: req.headers,
+      body: req.body
+    });
+
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      console.error('Invalid request body:', req.body);
+      return res.status(400).json({ error: 'Invalid request body' });
     }
 
-    const headers = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": process.env.NODE_ENV === 'production' 
-        ? 'https://private-llm.onrender.com' 
-        : `http://localhost:${PORT}`,
-      "X-Title": "Private LLM App"
-    };
-
-    // Debug: Log the request details
     console.log('Making request to OpenRouter with headers:', {
-      ...headers,
-      Authorization: headers.Authorization ? 'Bearer [REDACTED]' : 'Not Set'
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer [REDACTED]',
+      'HTTP-Referer': 'http://localhost:4000',
+      'X-Title': 'Private LLM App'
     });
-    console.log('Request body:', req.body);
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: headers,
+    console.log('Request body:', { messages });
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'http://localhost:4000',
+        'X-Title': 'Private LLM App'
+      },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: req.body.messages
-      }),
+        model: 'openai/gpt-3.5-turbo',
+        messages: messages
+      })
     });
-
-    const data = await response.json();
 
     if (!response.ok) {
-      console.error("OpenRouter API error:", data);
-      return res.status(response.status).json({ error: data });
+      const errorText = await response.text();
+      console.error('OpenRouter API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
     }
 
+    const data = await response.json();
+    console.log('OpenRouter API response:', data);
+
     res.json(data);
-  } catch (err) {
-    console.error("Proxy error:", err);
-    res.status(500).json({ error: "Failed to contact OpenRouter." });
+  } catch (error) {
+    console.error('Error in /api/chat:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
 

@@ -36,6 +36,8 @@ const Chat: React.FC = () => {
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      console.log('Sending request to:', apiUrl);
+      
       const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
         headers: {
@@ -50,10 +52,19 @@ const Chat: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        throw new Error(errorData.error || 'Failed to get response');
       }
 
       const data = await response.json();
+      console.log('Server response:', data);
+
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('Invalid response format:', data);
+        throw new Error('Invalid response from server');
+      }
+
       const assistantMessage: Message = {
         role: 'assistant',
         content: data.choices[0].message.content,
@@ -63,7 +74,7 @@ const Chat: React.FC = () => {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
       console.error('Error sending message:', err);
-      setError('Failed to send message. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
     }
