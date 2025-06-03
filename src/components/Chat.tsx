@@ -101,12 +101,16 @@ const Chat: React.FC = () => {
   return (
     <div className="chat-container">
       <header className="header">
-        <h1>LocalLLM Chat</h1>
-        <div className="user-info">
-          <span>Welcome, {user?.email}</span>
-          <button onClick={() => signOut()} className="logout-button">
-            Logout
-          </button>
+        <div className="chat-header">
+          <div className="header-left">
+            <span>KML Production</span>
+          </div>
+          <div className="user-info">
+            <span>Welcome, {user?.email}</span>
+            <button onClick={() => signOut()} className="logout-button">
+              Logout
+            </button>
+          </div>
         </div>
       </header>
       <main className="chat-main">

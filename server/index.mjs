@@ -81,7 +81,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
       'HTTP-Referer': process.env.NODE_ENV === 'production' 
         ? 'https://localllm.onrender.com'
         : 'http://localhost:4000',
-      'X-Title': 'Private LLM App'
+      'X-Title': 'KML Production'
     });
 
     console.log('Request body:', { messages });
@@ -94,7 +94,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         'HTTP-Referer': process.env.NODE_ENV === 'production' 
           ? 'https://localllm.onrender.com'
           : 'http://localhost:4000',
-        'X-Title': 'Private LLM App'
+        'X-Title': 'KML Production'
       },
       body: JSON.stringify({
         model: 'openai/gpt-3.5-turbo',
