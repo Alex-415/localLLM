@@ -56,14 +56,7 @@ app.use(cors({
 // Add OPTIONS handler for preflight requests
 app.options('*', cors());
 
-// Add a middleware to handle CORS headers manually
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-  next();
-});
-
+// Parse JSON bodies
 app.use(express.json());
 
 // Health check endpoint
@@ -78,10 +71,18 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'dist')));
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log('Incoming request:', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    body: req.body
+  });
+  next();
+});
 
-// Handle API routes first
+// Chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
     console.log('Received chat request:', {
@@ -191,9 +192,21 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '..', 'dist')));
+
 // Handle all other routes by serving the React app
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
 app.listen(PORT, () => {
