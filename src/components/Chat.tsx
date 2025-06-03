@@ -62,6 +62,11 @@ const Chat: React.FC = () => {
       const responseText = await response.text();
       console.log('Raw response:', responseText);
       
+      if (!responseText) {
+        console.error('Empty response from server');
+        throw new Error('Empty response from server');
+      }
+
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {

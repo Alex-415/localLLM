@@ -87,7 +87,8 @@ app.post('/api/chat', async (req, res) => {
     console.log('Received chat request:', {
       headers: req.headers,
       body: req.body,
-      url: req.url
+      url: req.url,
+      method: req.method
     });
 
     const { messages } = req.body;
@@ -133,12 +134,17 @@ app.post('/api/chat', async (req, res) => {
     });
 
     console.log('OpenRouter response status:', response.status);
-    console.log('OpenRouter response headers:', response.headers);
+    console.log('OpenRouter response headers:', Object.fromEntries(response.headers.entries()));
 
     let responseData;
     const responseText = await response.text();
     console.log('OpenRouter raw response:', responseText);
     
+    if (!responseText) {
+      console.error('Empty response from OpenRouter');
+      return res.status(500).json({ error: 'Empty response from OpenRouter API' });
+    }
+
     try {
       responseData = JSON.parse(responseText);
     } catch (parseError) {
