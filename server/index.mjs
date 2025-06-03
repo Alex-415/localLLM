@@ -147,7 +147,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         'X-Title': 'KML Production'
       },
       body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo',
+        model: 'deepseek/deepseek-coder:free',
         messages: messages
       })
     });
