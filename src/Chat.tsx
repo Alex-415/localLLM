@@ -10,7 +10,7 @@ interface Message {
 }
 
 const STORAGE_KEY = 'chat_messages';
-const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>(() => {

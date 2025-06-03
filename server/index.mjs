@@ -82,7 +82,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// API Routes
+// Create API router
 const apiRouter = express.Router();
 
 // Health check endpoint
@@ -97,7 +97,7 @@ apiRouter.get('/health', (req, res) => {
   });
 });
 
-// Chat endpoint - handle both /api/chat and /chat
+// Chat endpoint
 apiRouter.post('/chat', async (req, res) => {
   console.log('Chat request received:', {
     body: req.body,
@@ -189,6 +189,6 @@ app.listen(PORT, () => {
     NODE_ENV: process.env.NODE_ENV,
     PORT,
     BASE_URL,
-    CORS_ORIGINS: ['http://localhost:5173', 'https://localllm.onrender.com']
+    CORS_ORIGINS: allowedOrigins
   });
 });
