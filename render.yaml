@@ -6,7 +6,7 @@ services:
     branch: main
     autoDeploy: true
     buildCommand: docker build -t private-llm .
-    startCommand: docker run -p 10000:10000 -e NODE_ENV=production private-llm
+    startCommand: node server/index.mjs
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false
