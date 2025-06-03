@@ -3,7 +3,7 @@ services:
     name: private-llm
     env: docker
     repo: https://github.com/Alex-415/localLLM
-    branch: main
+    branch: master
     autoDeploy: true
     buildCommand: docker build -t private-llm .
     startCommand: docker run -p 10000:10000 private-llm
@@ -37,3 +37,6 @@ services:
     healthCheckPath: /api/health
     plan: starter
     numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: node --trace-warnings index.mjs
