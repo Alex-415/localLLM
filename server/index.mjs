@@ -101,7 +101,7 @@ apiRouter.get('/health', (req, res) => {
   });
 });
 
-// Chat endpoint
+// Chat endpoint - handle both /api/chat and /chat
 apiRouter.post('/chat', async (req, res) => {
   try {
     console.log('Received chat request:', {
