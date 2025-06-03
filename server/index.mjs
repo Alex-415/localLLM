@@ -28,7 +28,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4000',
   'http://localhost',
-  'https://private-llm.onrender.com',
+  'https://localllm.onrender.com',
   'https://*.onrender.com'
 ];
 
@@ -47,7 +47,7 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
@@ -55,6 +55,14 @@ app.use(cors({
 
 // Add OPTIONS handler for preflight requests
 app.options('*', cors());
+
+// Add a middleware to handle CORS headers manually
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  next();
+});
 
 app.use(express.json());
 
@@ -97,7 +105,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer [REDACTED]',
         'HTTP-Referer': process.env.NODE_ENV === 'production' 
-          ? 'https://private-llm.onrender.com'
+          ? 'https://localllm.onrender.com'
           : 'http://localhost:4000',
         'X-Title': 'KML Production'
       }
@@ -111,7 +119,7 @@ app.post(['/api/chat', '/chat'], async (req, res) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'HTTP-Referer': process.env.NODE_ENV === 'production' 
-          ? 'https://private-llm.onrender.com'
+          ? 'https://localllm.onrender.com'
           : 'http://localhost:4000',
         'X-Title': 'KML Production'
       },

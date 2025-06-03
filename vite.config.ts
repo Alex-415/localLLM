@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   
   // Determine the API URL based on the environment
   const apiUrl = mode === 'production' 
-    ? 'https://private-llm.onrender.com'  // Updated Render.com URL
+    ? 'https://localllm.onrender.com'  // Updated Render.com URL
     : 'http://localhost:4000'
   
   return {
@@ -22,18 +22,7 @@ export default defineConfig(({ mode }) => {
           target: apiUrl,
           changeOrigin: true,
           secure: false,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
-              console.log('proxy error', err);
-            });
-            proxy.on('proxyReq', (proxyReq, req, _res) => {
-              console.log('Sending Request to the Target:', req.method, req.url);
-            });
-            proxy.on('proxyRes', (proxyRes, req, _res) => {
-              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-            });
-          }
+          rewrite: (path) => path.replace(/^\/api/, '')
         },
       },
     },
@@ -42,7 +31,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       allowedHosts: [
         'localhost',
-        'private-llm.onrender.com',
+        'localllm.onrender.com',
         '.onrender.com'
       ],
     },
