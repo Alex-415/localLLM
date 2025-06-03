@@ -26,6 +26,7 @@ const allowedOrigins = [
   'https://alex-415.github.io',
   'https://alex-415.github.io/localLLM',
   'http://localhost:5173',
+  'http://localhost:4000',
   'http://localhost',
   'https://private-llm.onrender.com',
   'https://*.onrender.com'
@@ -33,14 +34,27 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
       callback(null, true);
     } else {
+      console.log('Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Add OPTIONS handler for preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 
