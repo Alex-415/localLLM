@@ -55,6 +55,7 @@ const Chat = () => {
     setError(null);
 
     try {
+      console.log('Sending request to:', `${API_BASE_URL}/api/chat`);
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { 
@@ -62,10 +63,12 @@ const Chat = () => {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
           messages: newMessages.map(({ role, content }) => ({ role, content })),
         }),
       });
+
+      console.log('Response status:', res.status);
+      console.log('Response headers:', Object.fromEntries(res.headers.entries()));
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -73,16 +76,15 @@ const Chat = () => {
       }
 
       const data = await res.json();
+      console.log('Response data:', data);
 
-      if (!data.choices?.[0]?.message?.content) {
+      if (!data.message) {
         throw new Error('Invalid response format from server');
       }
 
-      const reply = data.choices[0].message.content;
-
       setMessages((prev) => [...prev, { 
         role: "assistant", 
-        content: reply,
+        content: data.message,
         timestamp: Date.now()
       }]);
     } catch (err: any) {

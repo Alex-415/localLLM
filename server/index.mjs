@@ -77,7 +77,9 @@ app.use((req, res, next) => {
     baseUrl: req.baseUrl,
     originalUrl: req.originalUrl,
     headers: req.headers,
-    body: req.body
+    body: req.body,
+    hostname: req.hostname,
+    protocol: req.protocol
   });
   next();
 });
@@ -93,7 +95,8 @@ apiRouter.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     baseUrl: BASE_URL,
     environment: process.env.NODE_ENV,
-    port: PORT
+    port: PORT,
+    hostname: req.hostname
   });
 });
 
@@ -101,7 +104,9 @@ apiRouter.get('/health', (req, res) => {
 apiRouter.post('/chat', async (req, res) => {
   console.log('Chat request received:', {
     body: req.body,
-    headers: req.headers
+    headers: req.headers,
+    hostname: req.hostname,
+    protocol: req.protocol
   });
 
   try {
