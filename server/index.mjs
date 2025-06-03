@@ -182,7 +182,11 @@ app.use('/api', apiRouter);
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // Handle all other routes by serving the React app
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
   res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
