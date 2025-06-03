@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Chat from './components/Chat';
 import Login from './components/Login';
@@ -6,6 +6,12 @@ import './App.css';
 
 function App() {
   const { user, loading } = useAuth();
+  const location = useLocation();
+
+  // Skip routing for API endpoints
+  if (location.pathname.startsWith('/api/')) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -26,6 +32,10 @@ function App() {
         <Route 
           path="/login" 
           element={!user ? <Login /> : <Navigate to="/" />} 
+        />
+        <Route 
+          path="*" 
+          element={<Navigate to="/" />} 
         />
       </Routes>
     </div>
