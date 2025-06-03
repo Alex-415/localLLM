@@ -19,16 +19,16 @@ console.log('Environment variables:', {
 });
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 10000;
 const BASE_URL = process.env.BASE_URL || '';
 
 // Debug: Log server startup information
 console.log('Server starting with configuration:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: PORT,
-  BASE_URL: process.env.NODE_ENV === 'production' 
+  BASE_URL: BASE_URL || (process.env.NODE_ENV === 'production' 
     ? 'https://localllm.onrender.com'
-    : 'http://localhost:4000'
+    : 'http://localhost:4000')
 });
 
 // Configure CORS for production
