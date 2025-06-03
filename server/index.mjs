@@ -200,57 +200,25 @@ apiRouter.post('/chat', async (req, res) => {
 // Mount API routes BEFORE static file serving
 app.use('/api', apiRouter);
 
-// 404 handler for API routes - must be before the catch-all route
-app.use('/api/*', (req, res) => {
-  console.error('API route not found:', {
-    url: req.originalUrl,
-    method: req.method,
-    path: req.path,
-    baseUrl: req.baseUrl,
-    headers: req.headers
-  });
-  res.status(404).json({ error: 'API endpoint not found' });
-});
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '..', 'dist')));
-
-// Handle all other routes by serving the React app
-app.get('*', (req, res, next) => {
-  // Skip API routes
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
-  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+// Handle all other routes by serving the index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server error:', {
-    error: err,
-    url: req.originalUrl,
-    method: req.method,
-    path: req.path,
-    baseUrl: req.baseUrl,
-    headers: req.headers
-  });
-  res.status(500).json({ 
-    error: 'Internal server error',
-    details: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  });
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start the server
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Server configuration:', {
-    NODE_ENV: process.env.NODE_ENV,
-    PORT,
-    BASE_URL,
-    CORS_ORIGINS: allowedOrigins,
-    API_ROUTES: ['/api/chat', '/api/health']
-  });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Base URL: ${BASE_URL}`);
 });
 
 // Handle server errors
