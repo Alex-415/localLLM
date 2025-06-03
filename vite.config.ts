@@ -13,6 +13,12 @@ export default defineConfig(({ mode }) => {
     ? 'https://localllm.onrender.com'  // Updated Render.com URL
     : 'http://localhost:4000'
   
+  console.log('Environment:', {
+    mode,
+    apiUrl,
+    envKeys: Object.keys(env).filter(key => key.startsWith('VITE_'))
+  });
+  
   return {
     plugins: [react()],
     server: {
