@@ -1,36 +1,23 @@
 services:
   - type: web
-    name: private-llm-backend
+    name: private-llm
     env: docker
     repo: https://github.com/Alex-415/localLLM
     branch: main
     autoDeploy: true
-    buildCommand: cd server && docker build -t private-llm-backend .
-    startCommand: docker run -p 4000:4000 -e NODE_ENV=production private-llm-backend
+    buildCommand: docker build -t private-llm .
+    startCommand: docker run -p 10000:10000 -e NODE_ENV=production private-llm
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: NODE_ENV
         value: production
+      - key: VITE_API_URL
+        value: https://private-llm.onrender.com
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         sync: false
-    healthCheckPath: /api/health
-    plan: starter
-    numInstances: 1
-
-  - type: web
-    name: private-llm-frontend
-    env: docker
-    repo: https://github.com/Alex-415/localLLM
-    branch: main
-    autoDeploy: true
-    buildCommand: docker build -t private-llm-frontend .
-    startCommand: docker run -p 80:80 private-llm-frontend
-    envVars:
-      - key: VITE_API_URL
-        value: https://private-llm-backend.onrender.com
       - key: VITE_FIREBASE_API_KEY
         sync: false
       - key: VITE_FIREBASE_AUTH_DOMAIN
@@ -45,5 +32,6 @@ services:
         sync: false
       - key: VITE_FIREBASE_MEASUREMENT_ID
         sync: false
+    healthCheckPath: /api/health
     plan: starter
     numInstances: 1
