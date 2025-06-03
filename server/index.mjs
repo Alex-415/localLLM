@@ -20,6 +20,7 @@ console.log('Environment variables:', {
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const BASE_URL = process.env.BASE_URL || '';
 
 // Debug: Log server startup information
 console.log('Server starting with configuration:', {
@@ -72,7 +73,6 @@ app.use(express.json());
 app.use((req, res, next) => {
   console.log('Incoming request:', {
     method: req.method,
-    url: req.url,
     path: req.path,
     baseUrl: req.baseUrl,
     originalUrl: req.originalUrl,
@@ -88,32 +88,23 @@ const apiRouter = express.Router();
 // Health check endpoint
 apiRouter.get('/health', (req, res) => {
   console.log('Health check requested');
-  res.status(200).json({
-    status: 'OK',
-    env: {
-      nodeEnv: process.env.NODE_ENV,
-      port: process.env.PORT,
-      apiKeyPresent: !!process.env.OPENROUTER_API_KEY,
-      baseUrl: process.env.NODE_ENV === 'production' 
-        ? 'https://localllm.onrender.com'
-        : 'http://localhost:4000'
-    }
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    baseUrl: BASE_URL,
+    environment: process.env.NODE_ENV,
+    port: PORT
   });
 });
 
 // Chat endpoint - handle both /api/chat and /chat
 apiRouter.post('/chat', async (req, res) => {
-  try {
-    console.log('Received chat request:', {
-      headers: req.headers,
-      body: req.body,
-      url: req.url,
-      path: req.path,
-      baseUrl: req.baseUrl,
-      originalUrl: req.originalUrl,
-      method: req.method
-    });
+  console.log('Chat request received:', {
+    body: req.body,
+    headers: req.headers
+  });
 
+  try {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
       console.error('Invalid request body:', req.body);
@@ -125,30 +116,13 @@ apiRouter.post('/chat', async (req, res) => {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    const openRouterUrl = 'https://openrouter.ai/api/v1/chat/completions';
-    console.log('Making request to OpenRouter:', {
-      url: openRouterUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer [REDACTED]',
-        'HTTP-Referer': process.env.NODE_ENV === 'production' 
-          ? 'https://localllm.onrender.com'
-          : 'http://localhost:4000',
-        'X-Title': 'KML Production'
-      }
-    });
-
-    console.log('Request body:', { messages });
-
-    const response = await fetch(openRouterUrl, {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'HTTP-Referer': process.env.NODE_ENV === 'production' 
-          ? 'https://localllm.onrender.com'
-          : 'http://localhost:4000',
-        'X-Title': 'KML Production'
+        'HTTP-Referer': 'https://localllm.onrender.com',
+        'X-Title': 'LocalLLM'
       },
       body: JSON.stringify({
         model: 'deepseek/deepseek-coder:free',
@@ -156,60 +130,35 @@ apiRouter.post('/chat', async (req, res) => {
       })
     });
 
-    console.log('OpenRouter response status:', response.status);
-    console.log('OpenRouter response headers:', Object.fromEntries(response.headers.entries()));
-
-    let responseData;
-    const responseText = await response.text();
-    console.log('OpenRouter raw response:', responseText);
-    
-    if (!responseText) {
-      console.error('Empty response from OpenRouter');
-      return res.status(500).json({ error: 'Empty response from OpenRouter API' });
-    }
-
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse OpenRouter response:', {
-        status: response.status,
-        statusText: response.statusText,
-        responseText,
-        error: parseError
-      });
-      return res.status(500).json({ 
-        error: 'Invalid response from OpenRouter API',
-        details: process.env.NODE_ENV === 'development' ? responseText : undefined
-      });
-    }
-
     if (!response.ok) {
+      const errorText = await response.text();
       console.error('OpenRouter API error:', {
         status: response.status,
         statusText: response.statusText,
-        error: responseData
+        error: errorText
       });
       return res.status(response.status).json({ 
-        error: `OpenRouter API error: ${response.status} ${response.statusText}`,
-        details: process.env.NODE_ENV === 'development' ? responseData : undefined
+        error: 'OpenRouter API error',
+        details: errorText
       });
     }
 
-    if (!responseData.choices || !responseData.choices[0] || !responseData.choices[0].message) {
-      console.error('Invalid response format from OpenRouter:', responseData);
-      return res.status(500).json({ 
-        error: 'Invalid response format from OpenRouter API',
-        details: process.env.NODE_ENV === 'development' ? responseData : undefined
-      });
+    const data = await response.json();
+    console.log('OpenRouter response:', data);
+
+    if (!data.choices || !data.choices[0]?.message?.content) {
+      console.error('Invalid response from OpenRouter:', data);
+      return res.status(500).json({ error: 'Invalid response from OpenRouter' });
     }
 
-    console.log('Successfully processed OpenRouter response:', responseData);
-    res.json(responseData);
+    res.json({
+      message: data.choices[0].message.content
+    });
   } catch (error) {
     console.error('Error in chat endpoint:', error);
     res.status(500).json({ 
-      error: error.message || 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: 'Internal server error',
+      details: error.message
     });
   }
 });
@@ -228,17 +177,18 @@ app.get('*', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({
+  res.status(500).json({ 
     error: 'Internal server error',
-    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    details: err.message
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Proxy server running at ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-  console.log(`API Key: ${process.env.OPENROUTER_API_KEY ? "Set" : "Not Set"}`);
-  console.log(`Base URL: ${process.env.NODE_ENV === 'production' 
-    ? 'https://localllm.onrender.com'
-    : 'http://localhost:4000'}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log('Server configuration:', {
+    NODE_ENV: process.env.NODE_ENV,
+    PORT,
+    BASE_URL,
+    CORS_ORIGINS: ['http://localhost:5173', 'https://localllm.onrender.com']
+  });
 });
