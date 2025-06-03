@@ -35,7 +35,7 @@ const Chat: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://localllm.onrender.com';
+      const apiUrl = import.meta.env.VITE_API_URL;
       
       console.log('Sending request to:', `${apiUrl}/api/chat`);
       
