@@ -21,6 +21,15 @@ console.log('Environment variables:', {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Debug: Log server startup information
+console.log('Server starting with configuration:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: PORT,
+  BASE_URL: process.env.NODE_ENV === 'production' 
+    ? 'https://localllm.onrender.com'
+    : 'http://localhost:4000'
+});
+
 // Configure CORS for production
 const allowedOrigins = [
   'https://alex-415.github.io',
@@ -59,6 +68,20 @@ app.options('*', cors());
 // Parse JSON bodies
 app.use(express.json());
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log('Incoming request:', {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    baseUrl: req.baseUrl,
+    originalUrl: req.originalUrl,
+    headers: req.headers,
+    body: req.body
+  });
+  next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -66,29 +89,24 @@ app.get('/health', (req, res) => {
     env: {
       nodeEnv: process.env.NODE_ENV,
       port: process.env.PORT,
-      apiKeyPresent: !!process.env.OPENROUTER_API_KEY
+      apiKeyPresent: !!process.env.OPENROUTER_API_KEY,
+      baseUrl: process.env.NODE_ENV === 'production' 
+        ? 'https://localllm.onrender.com'
+        : 'http://localhost:4000'
     }
   });
 });
 
-// Debug middleware to log all requests
-app.use((req, res, next) => {
-  console.log('Incoming request:', {
-    method: req.method,
-    url: req.url,
-    headers: req.headers,
-    body: req.body
-  });
-  next();
-});
-
-// Chat endpoint
-app.post('/api/chat', async (req, res) => {
+// Chat endpoint - handle both /api/chat and /chat
+app.post(['/api/chat', '/chat'], async (req, res) => {
   try {
     console.log('Received chat request:', {
       headers: req.headers,
       body: req.body,
       url: req.url,
+      path: req.path,
+      baseUrl: req.baseUrl,
+      originalUrl: req.originalUrl,
       method: req.method
     });
 
@@ -213,4 +231,7 @@ app.listen(PORT, () => {
   console.log(`✅ Proxy server running at ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`API Key: ${process.env.OPENROUTER_API_KEY ? "Set" : "Not Set"}`);
+  console.log(`Base URL: ${process.env.NODE_ENV === 'production' 
+    ? 'https://localllm.onrender.com'
+    : 'http://localhost:4000'}`);
 });
