@@ -5,27 +5,93 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
+import fetch from 'node-fetch';
+import authRoutes from './routes/auth.js';
+import User from './models/User.js';
 
+// Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnvVars = ['OPENROUTER_API_KEY', 'MONGODB_URI', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('Missing required environment variables:', missingEnvVars);
+  process.exit(1);
+}
+
 const app = express();
-app.use(cors());
+
+// CORS configuration
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://192.168.68.105:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// Basic root route for testing
+app.get('/', (req, res) => {
+  res.json({ message: 'Server is running' });
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Chat endpoint
+app.post("/api/chat", async (req, res) => {
+  try {
+    // Validate request body
+    if (!req.body || !Array.isArray(req.body.messages)) {
+      return res.status(400).json({ error: "Invalid request format" });
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": process.env.NODE_ENV === 'production' 
+        ? 'https://private-llm.onrender.com' 
+        : `http://localhost:${process.env.PORT || 3001}`,
+      "X-Title": "Private LLM App"
+    };
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: req.body.messages
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("OpenRouter API error:", data);
+      return res.status(response.status).json({ error: "Failed to get response from AI model" });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error("Proxy error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// User Schema
-const userSchema = new mongoose.Schema({
-  uid: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  name: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.model('User', userSchema);
+  .then(() => {
+    // Remove console.log
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -104,14 +170,10 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     // Create new user
     const user = new User({
       email,
-      password: hashedPassword,
+      password,
       name
     });
 
@@ -154,7 +216,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -195,7 +257,24 @@ app.get('/api/profile', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
+
+// Port configuration
+const PORT = process.env.PORT || 3001;
+
+// Start server with error handling
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Please try a different port.`);
+    process.exit(1);
+  } else {
+    console.error('Server error:', err);
+    process.exit(1);
+  }
 }); 

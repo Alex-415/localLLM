@@ -5,27 +5,43 @@ import fetch from "node-fetch";
 import path from "path";
 import { fileURLToPath } from 'url';
 
-// Load env variables from .env file
-dotenv.config();
-
+// Load env variables from .env file with explicit path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Debug: Log all environment variables
+console.log('Environment variables:', {
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ? 'Set' : 'Not Set',
+  OPENROUTER_API_KEY_LENGTH: process.env.OPENROUTER_API_KEY?.length
+});
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Log environment variables (without exposing the full API key)
-console.log("Environment check:");
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("PORT:", process.env.PORT);
-console.log("API Key present:", !!process.env.OPENROUTER_API_KEY);
-console.log("API Key prefix:", process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.substring(0, 10) + "..." : "Not set");
+// Configure CORS for production
+const allowedOrigins = [
+  'https://alex-415.github.io',
+  'https://alex-415.github.io/localLLM',
+  'http://localhost:5173',
+  'http://localhost',
+  'https://private-llm.onrender.com',
+  'https://*.onrender.com'
+];
 
-// Log the build directory path
-const buildPath = path.join(__dirname, '..', 'dist');
-console.log("Build directory path:", buildPath);
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
-app.use(cors());
 app.use(express.json());
 
 // API routes
@@ -48,13 +64,6 @@ app.post("/api/chat", async (req, res) => {
       return res.status(500).json({ error: "API key not configured" });
     }
 
-    console.log("Request received:", {
-      method: req.method,
-      path: req.path,
-      body: req.body,
-      headers: req.headers
-    });
-
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
@@ -63,11 +72,13 @@ app.post("/api/chat", async (req, res) => {
         : `http://localhost:${PORT}`,
       "X-Title": "Private LLM App"
     };
-    
-    console.log("Making request to OpenRouter with headers:", {
+
+    // Debug: Log the request details
+    console.log('Making request to OpenRouter with headers:', {
       ...headers,
-      Authorization: "Bearer [REDACTED]"
+      Authorization: headers.Authorization ? 'Bearer [REDACTED]' : 'Not Set'
     });
+    console.log('Request body:', req.body);
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -79,11 +90,6 @@ app.post("/api/chat", async (req, res) => {
     });
 
     const data = await response.json();
-    console.log("OpenRouter response:", {
-      status: response.status,
-      statusText: response.statusText,
-      data: data
-    });
 
     if (!response.ok) {
       console.error("OpenRouter API error:", data);
@@ -98,11 +104,11 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // Serve static files from the React app
-app.use(express.static(buildPath));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // Handle all other routes by serving the React app
 app.use((req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
+  res.sendFile(path.join(path.join(__dirname, '..', 'dist'), 'index.html'));
 });
 
 app.listen(PORT, () => {
