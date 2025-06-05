@@ -44,15 +44,18 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
+    console.log('CORS check for origin:', origin);
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) {
+      console.log('No origin provided, allowing request');
       return callback(null, true);
     }
     
     if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      console.log('Origin allowed:', origin);
       callback(null, true);
     } else {
-      console.log('Blocked by CORS:', origin);
+      console.log('Origin blocked:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -70,9 +73,23 @@ app.options('*', cors());
 // Parse JSON bodies
 app.use(express.json({ limit: '10mb' }));
 
+// Create HTTP server instance
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Base URL: ${BASE_URL}`);
+  console.log('Server configuration:', {
+    port: PORT,
+    baseUrl: BASE_URL,
+    nodeEnv: process.env.NODE_ENV,
+    corsOrigins: allowedOrigins
+  });
+});
+
 // Debug middleware to log all requests
 app.use((req, res, next) => {
-  console.log('Incoming request:', {
+  const requestInfo = {
+    timestamp: new Date().toISOString(),
     method: req.method,
     path: req.path,
     baseUrl: req.baseUrl,
@@ -82,8 +99,38 @@ app.use((req, res, next) => {
     hostname: req.hostname,
     protocol: req.protocol,
     origin: req.headers.origin,
-    url: req.url
-  });
+    url: req.url,
+    ip: req.ip,
+    ips: req.ips,
+    subdomains: req.subdomains,
+    secure: req.secure,
+    xhr: req.xhr,
+    cookies: req.cookies,
+    signedCookies: req.signedCookies,
+    fresh: req.fresh,
+    stale: req.stale,
+    host: req.get('host'),
+    referer: req.get('referer'),
+    userAgent: req.get('user-agent')
+  };
+  
+  console.log('=== Incoming Request Details ===');
+  console.log(JSON.stringify(requestInfo, null, 2));
+  console.log('==============================');
+  
+  // Log the full request URL
+  console.log('Full URL:', `${req.protocol}://${req.get('host')}${req.originalUrl}`);
+  
+  next();
+});
+
+// Add a catch-all route for debugging
+app.use((req, res, next) => {
+  console.log('=== Route Not Found ===');
+  console.log('Request URL:', req.originalUrl);
+  console.log('Request Method:', req.method);
+  console.log('Request Headers:', req.headers);
+  console.log('=====================');
   next();
 });
 
@@ -212,13 +259,6 @@ app.get('*', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ error: 'Internal server error' });
-});
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-  console.log(`Base URL: ${BASE_URL}`);
 });
 
 // Handle server errors

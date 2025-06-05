@@ -39,8 +39,31 @@ const Chat: React.FC = () => {
       const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
       const apiUrl = `${baseUrl}/api/chat`;
 
-      console.log('Sending request to:', apiUrl);
-      console.log('Request payload:', { messages: [...messages, userMessage] });
+      console.log('=== API Request Configuration ===');
+      console.log('Environment:', {
+        mode: import.meta.env.MODE,
+        viteApiUrl: import.meta.env.VITE_API_URL,
+        windowOrigin: window.location.origin,
+        windowHref: window.location.href,
+        windowProtocol: window.location.protocol,
+        windowHost: window.location.host,
+        windowHostname: window.location.hostname,
+        windowPort: window.location.port
+      });
+      console.log('Request Details:', {
+        baseUrl,
+        apiUrl,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin
+        },
+        body: {
+          messages: [...messages, userMessage]
+        }
+      });
+      console.log('=============================');
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -55,18 +78,31 @@ const Chat: React.FC = () => {
         }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('=== API Response Details ===');
+      console.log('Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        url: response.url,
+        type: response.type,
+        redirected: response.redirected,
+        ok: response.ok
+      });
+      console.log('==========================');
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('API Error:', {
+        console.error('=== API Error Details ===');
+        console.error({
           status: response.status,
           statusText: response.statusText,
           error: errorData,
           url: apiUrl,
-          headers: Object.fromEntries(response.headers.entries())
+          headers: Object.fromEntries(response.headers.entries()),
+          requestUrl: window.location.href,
+          requestOrigin: window.location.origin
         });
+        console.error('========================');
         throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
 

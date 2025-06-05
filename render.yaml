@@ -6,7 +6,7 @@ services:
     branch: master
     autoDeploy: true
     buildCommand: docker build -t private-llm .
-    startCommand: docker run -p 10000:10000 -p 9229:9229 private-llm
+    startCommand: docker run -p 8080:10000 -p 9229:9229 private-llm
     envVars:
       - key: OPENROUTER_API_KEY
         sync: false
