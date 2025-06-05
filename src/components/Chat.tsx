@@ -44,7 +44,24 @@ const Chat = () => {
 
   return (
     <div className="chat-container">
-      {/* Add your chat UI here */}
+      <div className="messages">
+        {messages.map((msg, i) => (
+          <div key={i} className={`message ${msg.role}`}>
+            {msg.content}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const input = e.currentTarget.querySelector('input');
+        if (input) {
+          fetchChatResponse(input.value);
+          input.value = '';
+        }
+      }}>
+        <input type="text" placeholder="Type a message..." />
+        <button type="submit">Send</button>
+      </form>
     </div>
   );
 };
