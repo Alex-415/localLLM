@@ -42,6 +42,10 @@ const allowedOrigins = [
   'https://*.onrender.com'
 ];
 
+// Parse JSON bodies
+app.use(express.json({ limit: '10mb' }));
+
+// Configure CORS
 app.use(cors({
   origin: function(origin, callback) {
     console.log('CORS check for origin:', origin);
@@ -69,9 +73,6 @@ app.use(cors({
 
 // Add OPTIONS handler for preflight requests
 app.options('*', cors());
-
-// Parse JSON bodies
-app.use(express.json({ limit: '10mb' }));
 
 // Mount API router
 const apiRouter = express.Router();
