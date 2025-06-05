@@ -217,21 +217,34 @@ app.use('*', (req, res, next) => {
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
   } else {
+    // For API routes, pass to the next middleware
     next();
   }
 });
 
-// Create HTTP server instance
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-  console.log(`Base URL: ${BASE_URL}`);
-  console.log('Server configuration:', {
-    port: PORT,
-    baseUrl: BASE_URL,
-    nodeEnv: process.env.NODE_ENV,
-    corsOrigins: allowedOrigins
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('=== Error Handler ===');
+  console.error('Error:', err);
+  console.error('Request:', {
+    method: req.method,
+    path: req.path,
+    baseUrl: req.baseUrl,
+    originalUrl: req.originalUrl
   });
+  
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    path: req.path,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Base URL:', BASE_URL);
 });
 
 // Debug middleware to log all requests
@@ -282,14 +295,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
 // Handle server errors
-server.on('error', (error) => {
+app.on('error', (error) => {
   console.error('Server error:', error);
   if (error.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use`);
@@ -300,7 +307,7 @@ server.on('error', (error) => {
 // Handle process termination
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
+  app.close(() => {
     console.log('Server closed');
     process.exit(0);
   });
