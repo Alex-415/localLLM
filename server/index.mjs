@@ -1,9 +1,9 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import fetch from "node-fetch";
-import path from "path";
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import chatRouter from './routes/api.mjs';
 
 // Load env variables from .env file with explicit path
 const __filename = fileURLToPath(import.meta.url);
@@ -202,72 +202,13 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Add a catch-all route for debugging
-app.use('*', (req, res, next) => {
-  console.log('=== Catch-all Route Hit ===');
-  console.log('Request details:', {
-    method: req.method,
-    path: req.path,
-    baseUrl: req.baseUrl,
-    originalUrl: req.originalUrl,
-    headers: req.headers,
-    query: req.query,
-    body: req.body
-  });
-  
-  // Only serve index.html for non-API routes
-  if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
-  } else {
-    // For API routes, pass to the next middleware
-    next();
-  }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('=== Error Handler ===');
-  console.error('Error:', err);
-  console.error('Request:', {
-    method: req.method,
-    path: req.path,
-    baseUrl: req.baseUrl,
-    originalUrl: req.originalUrl
-  });
-  
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error',
-    path: req.path,
-    timestamp: new Date().toISOString()
-  });
+app.get('*', (req, res) => {
+  console.log('Catch-all route hit:', req.path);
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Start the server
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log('Environment:', process.env.NODE_ENV);
-  console.log('Base URL:', BASE_URL);
-  console.log('Server configuration:', {
-    port: PORT,
-    baseUrl: BASE_URL,
-    nodeEnv: process.env.NODE_ENV,
-    corsOrigins: allowedOrigins
-  });
-});
-
-// Handle server errors
-server.on('error', (error) => {
-  console.error('Server error:', error);
-  if (error.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use`);
-    process.exit(1);
-  }
-});
-
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+  console.log(`Base URL: ${BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://localllm.onrender.com' : 'http://localhost:4000')}`);
 });
