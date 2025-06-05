@@ -124,16 +124,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add a catch-all route for debugging
-app.use((req, res, next) => {
-  console.log('=== Route Not Found ===');
-  console.log('Request URL:', req.originalUrl);
-  console.log('Request Method:', req.method);
-  console.log('Request Headers:', req.headers);
-  console.log('=====================');
-  next();
-});
-
 // Create API router
 const apiRouter = express.Router();
 
@@ -246,6 +236,16 @@ apiRouter.post('/chat', async (req, res) => {
 
 // Mount API routes BEFORE static file serving
 app.use('/api', apiRouter);
+
+// Add a catch-all route for debugging
+app.use((req, res, next) => {
+  console.log('=== Route Not Found ===');
+  console.log('Request URL:', req.originalUrl);
+  console.log('Request Method:', req.method);
+  console.log('Request Headers:', req.headers);
+  console.log('=====================');
+  next();
+});
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
