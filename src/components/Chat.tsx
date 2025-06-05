@@ -73,6 +73,7 @@ const Chat: React.FC = () => {
           'Origin': window.location.origin
         },
         credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify({
           messages: [...messages, userMessage],
         }),
