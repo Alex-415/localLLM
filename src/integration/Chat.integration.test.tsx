@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '../test-utils';
-import Chat from '../Chat';
+import Chat from '../components/Chat';
 
 describe('Chat Integration', () => {
   beforeAll(() => {
