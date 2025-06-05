@@ -186,6 +186,17 @@ apiRouter.post('/chat', async (req, res) => {
 // Mount API routes BEFORE static file serving
 app.use('/api', apiRouter);
 
+// Add logging middleware for all requests
+app.use((req, res, next) => {
+  console.log('=== Incoming Request ===');
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Base URL:', req.baseUrl);
+  console.log('Original URL:', req.originalUrl);
+  console.log('Headers:', req.headers);
+  next();
+});
+
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
 
@@ -198,31 +209,16 @@ app.use('*', (req, res, next) => {
     baseUrl: req.baseUrl,
     originalUrl: req.originalUrl,
     headers: req.headers,
-    body: req.body,
-    hostname: req.hostname,
-    protocol: req.protocol,
-    origin: req.headers.origin,
-    url: req.url,
-    ip: req.ip,
-    ips: req.ips,
-    subdomains: req.subdomains,
-    secure: req.secure,
-    xhr: req.xhr,
-    cookies: req.cookies,
-    signedCookies: req.signedCookies,
-    fresh: req.fresh,
-    stale: req.stale,
-    host: req.get('host'),
-    referer: req.get('referer'),
-    userAgent: req.get('user-agent')
+    query: req.query,
+    body: req.body
   });
-  console.log('==========================');
-  next();
-});
-
-// Serve index.html for all other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+  
+  // Only serve index.html for non-API routes
+  if (!req.path.startsWith('/api/')) {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  } else {
+    next();
+  }
 });
 
 // Create HTTP server instance
