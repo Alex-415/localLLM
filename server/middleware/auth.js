@@ -1,3 +1,9 @@
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  next();
+});
 
 export const protect = async (req, res, next) => {
   try {
@@ -19,4 +25,4 @@ export const protect = async (req, res, next) => {
     console.error('Auth middleware error:', error);
     res.status(401).json({ message: 'Not authorized' });
   }
-}; 
+};
