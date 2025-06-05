@@ -241,62 +241,20 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log('Environment:', process.env.NODE_ENV);
   console.log('Base URL:', BASE_URL);
-});
-
-// Debug middleware to log all requests
-app.use((req, res, next) => {
-  const requestInfo = {
-    timestamp: new Date().toISOString(),
-    method: req.method,
-    path: req.path,
-    baseUrl: req.baseUrl,
-    originalUrl: req.originalUrl,
-    headers: req.headers,
-    body: req.body,
-    hostname: req.hostname,
-    protocol: req.protocol,
-    origin: req.headers.origin,
-    url: req.url,
-    ip: req.ip,
-    ips: req.ips,
-    subdomains: req.subdomains,
-    secure: req.secure,
-    xhr: req.xhr,
-    cookies: req.cookies,
-    signedCookies: req.signedCookies,
-    fresh: req.fresh,
-    stale: req.stale,
-    host: req.get('host'),
-    referer: req.get('referer'),
-    userAgent: req.get('user-agent')
-  };
-  
-  console.log('=== Incoming Request Details ===');
-  console.log(JSON.stringify(requestInfo, null, 2));
-  console.log('==============================');
-  
-  // Log the full request URL
-  console.log('Full URL:', `${req.protocol}://${req.get('host')}${req.originalUrl}`);
-  
-  next();
-});
-
-// Add a catch-all route for debugging
-app.use((req, res, next) => {
-  console.log('=== Route Not Found ===');
-  console.log('Request URL:', req.originalUrl);
-  console.log('Request Method:', req.method);
-  console.log('Request Headers:', req.headers);
-  console.log('=====================');
-  next();
+  console.log('Server configuration:', {
+    port: PORT,
+    baseUrl: BASE_URL,
+    nodeEnv: process.env.NODE_ENV,
+    corsOrigins: allowedOrigins
+  });
 });
 
 // Handle server errors
-app.on('error', (error) => {
+server.on('error', (error) => {
   console.error('Server error:', error);
   if (error.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use`);
@@ -304,10 +262,10 @@ app.on('error', (error) => {
   }
 });
 
-// Handle process termination
+// Handle graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
-  app.close(() => {
+  server.close(() => {
     console.log('Server closed');
     process.exit(0);
   });
