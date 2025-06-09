@@ -14,8 +14,11 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 console.log('Environment variables:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
+  BASE_URL: process.env.BASE_URL,
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ? 'Set' : 'Not Set',
-  OPENROUTER_API_KEY_LENGTH: process.env.OPENROUTER_API_KEY?.length
+  OPENROUTER_API_KEY_LENGTH: process.env.OPENROUTER_API_KEY?.length,
+  JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not Set',
+  VITE_API_URL: process.env.VITE_API_URL
 });
 
 const app = express();
@@ -28,7 +31,8 @@ console.log('Server starting with configuration:', {
   PORT: PORT,
   BASE_URL: BASE_URL || (process.env.NODE_ENV === 'production' 
     ? 'https://localllm.onrender.com'
-    : 'http://localhost:4000')
+    : 'http://localhost:4000'),
+  CORS_ALLOWED_ORIGINS: allowedOrigins
 });
 
 // Configure CORS for production
