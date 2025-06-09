@@ -1,24 +1,25 @@
 services:
   - type: web
-    name: private-llm
+    name: kml-production
     env: node
-    repo: https://github.com/Alex-415/localLLM
-    branch: master
     buildCommand: |
-      export NODE_ENV=production
       export VITE_API_URL=https://localllm.onrender.com
-      export VITE_FIREBASE_API_KEY=AIzaSyCyALwLVmEdrFJMGwbaeE8ud10qUEzqFcg
-      export VITE_FIREBASE_AUTH_DOMAIN=kml-product.firebaseapp.com
-      export VITE_FIREBASE_PROJECT_ID=kml-product
-      export VITE_FIREBASE_STORAGE_BUCKET=kml-product.firebasestorage.app
+      export VITE_FIREBASE_API_KEY=AIzaSyBxGQJwQwQwQwQwQwQwQwQwQwQwQwQwQwQ
+      export VITE_FIREBASE_AUTH_DOMAIN=kml-production.firebaseapp.com
+      export VITE_FIREBASE_PROJECT_ID=kml-production
+      export VITE_FIREBASE_STORAGE_BUCKET=kml-production.appspot.com
       export VITE_FIREBASE_MESSAGING_SENDER_ID=874937833253
       export VITE_FIREBASE_APP_ID=1:874937833253:web:575f5ff29825cae9f82ccc
       export VITE_FIREBASE_MEASUREMENT_ID=G-4GBECSBL7G
       rm -rf node_modules package-lock.json
       npm cache clean --force
       npm install --legacy-peer-deps
+      npm install @vitejs/plugin-react --save
       npm run build
     startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
     envVars:
       - key: NODE_ENV
         value: production
