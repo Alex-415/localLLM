@@ -3,14 +3,6 @@ services:
     name: kml-production
     env: node
     buildCommand: |
-      export VITE_API_URL=https://localllm.onrender.com
-      export VITE_FIREBASE_API_KEY=AIzaSyBxGQJwQwQwQwQwQwQwQwQwQwQwQwQwQwQ
-      export VITE_FIREBASE_AUTH_DOMAIN=kml-production.firebaseapp.com
-      export VITE_FIREBASE_PROJECT_ID=kml-production
-      export VITE_FIREBASE_STORAGE_BUCKET=kml-production.appspot.com
-      export VITE_FIREBASE_MESSAGING_SENDER_ID=874937833253
-      export VITE_FIREBASE_APP_ID=1:874937833253:web:575f5ff29825cae9f82ccc
-      export VITE_FIREBASE_MEASUREMENT_ID=G-4GBECSBL7G
       rm -rf node_modules package-lock.json
       npm cache clean --force
       npm install --legacy-peer-deps
@@ -20,19 +12,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
-      - key: BASE_URL
-        value: https://localllm.onrender.com
       - key: VITE_API_URL
         value: https://localllm.onrender.com
-      - key: OPENROUTER_API_KEY
-        sync: false
-      - key: JWT_SECRET
-        sync: false
       - key: VITE_FIREBASE_API_KEY
         sync: false
       - key: VITE_FIREBASE_AUTH_DOMAIN
@@ -46,6 +27,17 @@ services:
       - key: VITE_FIREBASE_APP_ID
         sync: false
       - key: VITE_FIREBASE_MEASUREMENT_ID
+        sync: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: BASE_URL
+        value: https://localllm.onrender.com
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: JWT_SECRET
         sync: false
     healthCheckPath: /api/health
     plan: starter
