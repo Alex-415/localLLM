@@ -201,10 +201,23 @@ app.use((req, res, next) => {
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// Add a catch-all route for debugging
+// Add a catch-all route for SPA
 app.get('*', (req, res) => {
-  console.log('Catch-all route hit:', req.path);
+  // Don't handle API routes here
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  console.log('Serving index.html for path:', req.path);
   res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
 });
 
 // Start the server

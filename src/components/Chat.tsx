@@ -25,6 +25,7 @@ const Chat = () => {
     setMessages(newMessages);
   
     try {
+      console.log('Sending request to:', `${import.meta.env.VITE_API_URL}/api/chat`);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
         method: 'POST',
         headers: {
@@ -38,15 +39,27 @@ const Chat = () => {
       });
   
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => null);
+        console.error('API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
       }
   
       const data = await response.json();
+      console.log('API Response:', data);
+      
+      if (!data.response) {
+        throw new Error('Invalid response format from server');
+      }
+
       const assistantMessage: Message = { role: 'assistant', content: data.response };
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat error:', error);
-      setError('Failed to get response. Please try again.');
+      setError(error instanceof Error ? error.message : 'Failed to get response. Please try again.');
     } finally {
       setIsLoading(false);
     }
