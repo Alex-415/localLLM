@@ -8,13 +8,22 @@ services:
       npm install --legacy-peer-deps
       npm install @vitejs/plugin-react --save
       npm run build
-    startCommand: npm run start
+      cd server && npm install
+    startCommand: cd server && node index.mjs
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: BASE_URL
+        value: https://localllm.onrender.com
       - key: VITE_API_URL
         value: https://localllm.onrender.com
       - key: TOGETHER_API_KEY
+        sync: false
+      - key: JWT_SECRET
         sync: false
       - key: VITE_FIREBASE_API_KEY
         sync: false
@@ -29,17 +38,6 @@ services:
       - key: VITE_FIREBASE_APP_ID
         sync: false
       - key: VITE_FIREBASE_MEASUREMENT_ID
-        sync: false
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
-      - key: BASE_URL
-        value: https://localllm.onrender.com
-      - key: OPENROUTER_API_KEY
-        sync: false
-      - key: JWT_SECRET
         sync: false
     healthCheckPath: /api/health
     plan: starter

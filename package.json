@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "start": "vite preview --host 0.0.0.0 --port $PORT"
+    "start": "cd server && npm install && node index.mjs"
   },
   "dependencies": {
     "@types/axios": "^0.9.36",
