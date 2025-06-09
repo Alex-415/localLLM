@@ -1,5 +1,5 @@
 import express from 'express';
-import Together from 'together-ai';
+import { Together } from '@together-ai/sdk';
 
 const router = express.Router();
 
