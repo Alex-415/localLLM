@@ -5,7 +5,15 @@ services:
     repo: https://github.com/Alex-415/localLLM
     branch: master
     buildCommand: |
+      export NODE_ENV=production
       export VITE_API_URL=https://localllm.onrender.com
+      export VITE_FIREBASE_API_KEY=AIzaSyCyALwLVmEdrFJMGwbaeE8ud10qUEzqFcg
+      export VITE_FIREBASE_AUTH_DOMAIN=kml-product.firebaseapp.com
+      export VITE_FIREBASE_PROJECT_ID=kml-product
+      export VITE_FIREBASE_STORAGE_BUCKET=kml-product.firebasestorage.app
+      export VITE_FIREBASE_MESSAGING_SENDER_ID=874937833253
+      export VITE_FIREBASE_APP_ID=1:874937833253:web:575f5ff29825cae9f82ccc
+      export VITE_FIREBASE_MEASUREMENT_ID=G-4GBECSBL7G
       npm install
       npm run build
     startCommand: npm run preview
