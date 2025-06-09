@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install && tsc && vite build",
+    "build": "npm ci && tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
@@ -18,11 +18,13 @@
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
     "axios": "^1.9.0",
     "firebase": "^11.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.0"
+    "react-router-dom": "^6.22.0",
+    "vite": "^5.1.4"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
@@ -30,7 +32,6 @@
     "@testing-library/user-event": "^14.5.2",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
-    "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.2.2",
     "@vitest/ui": "^1.2.2",
     "eslint": "^8.56.0",
@@ -40,7 +41,6 @@
     "jsdom": "^24.0.0",
     "ts-jest": "^29.1.2",
     "typescript": "^5.2.2",
-    "vite": "^5.1.4",
     "vitest": "^1.2.2"
   }
 }

@@ -14,7 +14,9 @@ services:
       export VITE_FIREBASE_MESSAGING_SENDER_ID=874937833253
       export VITE_FIREBASE_APP_ID=1:874937833253:web:575f5ff29825cae9f82ccc
       export VITE_FIREBASE_MEASUREMENT_ID=G-4GBECSBL7G
-      npm install
+      rm -rf node_modules package-lock.json
+      npm cache clean --force
+      npm install --legacy-peer-deps
       npm run build
     startCommand: npm run start
     envVars:
