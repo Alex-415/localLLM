@@ -3,6 +3,10 @@ services:
     name: kml-production
     env: node
     buildCommand: |
+      # Set Node.js version
+      nvm install 18.17.0
+      nvm use 18.17.0
+      
       # Clean and install root dependencies
       rm -rf node_modules package-lock.json
       npm cache clean --force
@@ -15,16 +19,13 @@ services:
       # Install server dependencies
       cd server
       rm -rf node_modules package-lock.json
-      npm install express cors dotenv jsonwebtoken together-ai@0.16.0 --legacy-peer-deps
-      npm install nodemon --save-dev --legacy-peer-deps
+      npm install --legacy-peer-deps
+      npm list express
       cd ..
-      
-      # Verify server dependencies
-      ls -la server/node_modules/express
     startCommand: cd server && NODE_ENV=production node index.mjs
     envVars:
       - key: NODE_VERSION
-        value: 22.14.0
+        value: 18.17.0
       - key: NODE_ENV
         value: production
       - key: PORT
