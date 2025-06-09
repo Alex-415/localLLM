@@ -33,14 +33,12 @@ console.log('Server starting with configuration:', {
 
 // Configure CORS for production
 const allowedOrigins = [
-  'https://alex-415.github.io',
-  'https://alex-415.github.io/localLLM',
+  'https://localllm.onrender.com',
+  'https://www.localllm.onrender.com',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:4000',
-  'http://localhost',
-  'https://localllm.onrender.com',
-  'https://*.onrender.com'
+  'http://localhost'
 ];
 
 // Parse JSON bodies
