@@ -48,24 +48,29 @@ console.log('Server starting with configuration:', {
 // Parse JSON bodies
 app.use(express.json({ limit: '10mb' }));
 
-// Add logging middleware for all requests BEFORE routes
+// Add detailed request logging middleware
 app.use((req, res, next) => {
-  console.log('=== Incoming Request ===');
+  console.log('\n=== Incoming Request ===');
+  console.log('Time:', new Date().toISOString());
   console.log('Method:', req.method);
   console.log('Path:', req.path);
   console.log('Base URL:', req.baseUrl);
   console.log('Original URL:', req.originalUrl);
-  console.log('Headers:', req.headers);
-  console.log('Origin:', req.headers.origin);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('========================\n');
   next();
 });
 
 // Configure CORS
 app.use(cors({
   origin: function(origin, callback) {
+    console.log('CORS check for origin:', origin);
     if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      console.log('Origin allowed:', origin);
       callback(null, true);
     } else {
+      console.log('Origin blocked:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -78,7 +83,10 @@ app.use(cors({
 app.options('*', cors());
 
 // Mount API routes BEFORE static file serving
-app.use('/api', chatRouter);
+app.use('/api', (req, res, next) => {
+  console.log('API route accessed:', req.path);
+  next();
+}, chatRouter);
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -86,8 +94,10 @@ app.use(express.static(path.join(__dirname, '../dist')));
 // Add a catch-all route for SPA
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
+    console.log('API route not found:', req.path);
     return res.status(404).json({ error: 'API endpoint not found' });
   }
+  console.log('Serving index.html for path:', req.path);
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
@@ -102,6 +112,10 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Base URL: ${BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://localllm.onrender.com' : 'http://localhost:4000')}`);
+  console.log('\n=== Server Started ===');
+  console.log('Time:', new Date().toISOString());
+  console.log('Port:', PORT);
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Base URL:', process.env.BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://localllm.onrender.com' : 'http://localhost:4000'));
+  console.log('=====================\n');
 });

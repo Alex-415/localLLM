@@ -1,6 +1,6 @@
 // src/components/Chat.tsx
 import { useAuth } from '../contexts/AuthContext';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import './Chat.css';
 
 interface Message {
@@ -14,7 +14,7 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChatResponse = async (message: string) => {
+  const fetchChatResponse = useCallback(async (message: string) => {
     if (!message.trim()) return;
     
     setError(null);
@@ -25,8 +25,11 @@ const Chat = () => {
     setMessages(newMessages);
   
     try {
-      console.log('Sending request to:', `${import.meta.env.VITE_API_URL}/api/chat`);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
+      const apiUrl = `${import.meta.env.VITE_API_URL}/api/chat`;
+      console.log('Sending request to:', apiUrl);
+      console.log('Request payload:', { messages: newMessages });
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,9 +46,19 @@ const Chat = () => {
         console.error('API Error:', {
           status: response.status,
           statusText: response.statusText,
-          error: errorData
+          error: errorData,
+          url: apiUrl
         });
-        throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
+        
+        if (response.status === 404) {
+          throw new Error('API endpoint not found. Please check the server configuration.');
+        } else if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. Please check your permissions.');
+        } else {
+          throw new Error(errorData?.error || `Server error (${response.status}): ${response.statusText}`);
+        }
       }
   
       const data = await response.json();
@@ -63,7 +76,7 @@ const Chat = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [messages, user]);
 
   return (
     <div className="chat-container">

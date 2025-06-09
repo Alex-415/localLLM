@@ -7,7 +7,7 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  padding-bottom: 2rem;
+  padding-bottom: 4rem;
 }
 
 /* Desktop styles */
@@ -15,7 +15,7 @@
   .chat-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem 2rem 2rem;
+    padding: 0 2rem 4rem 2rem;
   }
 
   .messages {
