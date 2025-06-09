@@ -13,7 +13,7 @@ services:
       cd server
       npm install --legacy-peer-deps
       cd ..
-    startCommand: cd server && NODE_ENV=production node index.mjs
+    startCommand: cd server && NODE_ENV=production node --experimental-modules index.mjs
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
