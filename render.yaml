@@ -2,8 +2,18 @@ services:
   - type: web
     name: kml-production
     env: node
-    buildCommand: npm install --legacy-peer-deps && npm run build
-    startCommand: npm start
+    buildCommand: |
+      # Install dependencies
+      npm install --legacy-peer-deps
+      
+      # Build frontend
+      npm run build
+      
+      # Ensure server dependencies are installed
+      cd server
+      npm install --legacy-peer-deps
+      cd ..
+    startCommand: cd server && NODE_ENV=production node index.mjs
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
