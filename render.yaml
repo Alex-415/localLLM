@@ -1,25 +1,18 @@
 services:
   - type: web
     name: private-llm
-    env: docker
+    env: node
     repo: https://github.com/Alex-415/localLLM
     branch: master
-    autoDeploy: true
-    buildCommand: docker build -t private-llm .
-    startCommand: docker run -p 10000:10000 -p 9229:9229 private-llm
+    buildCommand: |
+      npm install
+      npm run build
+    startCommand: npm run preview
     envVars:
-      - key: OPENROUTER_API_KEY
-        sync: false
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
         value: https://localllm.onrender.com
-      - key: BASE_URL
-        value: https://localllm.onrender.com
-      - key: MONGODB_URI
-        sync: false
-      - key: JWT_SECRET
-        sync: false
       - key: VITE_FIREBASE_API_KEY
         sync: false
       - key: VITE_FIREBASE_AUTH_DOMAIN
@@ -34,9 +27,12 @@ services:
         sync: false
       - key: VITE_FIREBASE_MEASUREMENT_ID
         sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
     healthCheckPath: /api/health
     plan: starter
     numInstances: 1
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    dockerCommand: node --trace-warnings --inspect=0.0.0.0:9229 index.mjs
