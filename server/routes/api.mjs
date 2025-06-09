@@ -3,9 +3,18 @@ import Together from 'together-ai';
 
 const router = express.Router();
 
+// Debug: Log router creation
+console.log('Creating API router');
+
 // Initialize Together AI client
 const together = new Together({
   apiKey: process.env.TOGETHER_API_KEY
+});
+
+// Debug: Log Together AI client initialization
+console.log('Together AI client initialized:', {
+  apiKeyConfigured: !!process.env.TOGETHER_API_KEY,
+  apiKeyLength: process.env.TOGETHER_API_KEY?.length
 });
 
 // Health check endpoint
@@ -84,5 +93,11 @@ router.post('/chat', async (req, res) => {
     });
   }
 });
+
+// Debug: Log router configuration
+console.log('API router configured with routes:', router.stack.map(r => ({
+  path: r.route?.path,
+  methods: r.route?.methods
+})));
 
 export default router; 

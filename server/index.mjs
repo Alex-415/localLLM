@@ -82,6 +82,12 @@ app.use(cors({
 // Add OPTIONS handler for preflight requests
 app.options('*', cors());
 
+// Debug: Log available routes
+console.log('Available routes:', chatRouter.stack.map(r => ({
+  path: r.route?.path,
+  methods: r.route?.methods
+})));
+
 // Mount API routes BEFORE static file serving
 app.use('/api', (req, res, next) => {
   console.log('API route accessed:', req.path);
@@ -89,6 +95,13 @@ app.use('/api', (req, res, next) => {
   console.log('API route headers:', req.headers);
   next();
 }, chatRouter);
+
+// Debug: Log mounted routes
+console.log('Mounted routes:', app._router.stack.map(r => ({
+  path: r.route?.path,
+  methods: r.route?.methods,
+  regexp: r.regexp?.toString()
+})));
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
