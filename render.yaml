@@ -3,10 +3,17 @@ services:
     name: kml-production
     env: node
     buildCommand: |
-      # Install dependencies and build
+      # Install root dependencies
       npm install --legacy-peer-deps
+      
+      # Build frontend
       npm run build
-    startCommand: npm start
+      
+      # Install server dependencies
+      cd server
+      npm install --legacy-peer-deps
+      cd ..
+    startCommand: cd server && NODE_ENV=production node index.mjs
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
