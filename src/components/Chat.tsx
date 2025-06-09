@@ -1,6 +1,7 @@
 // src/components/Chat.tsx
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
+import './Chat.css';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,10 +11,15 @@ interface Message {
 const Chat = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchChatResponse = async (message: string) => {
     if (!message.trim()) return;
-  
+    
+    setError(null);
+    setIsLoading(true);
+    
     const userMessage: Message = { role: 'user', content: message };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -24,44 +30,96 @@ const Chat = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${await user?.getIdToken()}`,
+          'Accept': 'application/json',
+          'Origin': window.location.origin
         },
+        credentials: 'include',
         body: JSON.stringify({ messages: newMessages }),
       });
   
       if (!response.ok) {
-        console.error('API Response:', response); // log the response
         throw new Error(`HTTP error! status: ${response.status}`);
       }
   
-      const responseBody = await response.json();
-      console.log('Chat response:', responseBody);
-      // any handling of response
+      const data = await response.json();
+      const assistantMessage: Message = { role: 'assistant', content: data.response };
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat error:', error); // witness catch errors and analyze
-      throw new Error(`API error: ${error}`);
+      console.error('Chat error:', error);
+      setError('Failed to get response. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="chat-container">
-      <div className="messages">
-        {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.role}`}>
-            {msg.content}
-          </div>
-        ))}
+      <div className="chat-header">
+        <div className="header-left">
+          <span>KML Production</span>
+        </div>
+        <div className="user-info">
+          <span>{user?.email}</span>
+        </div>
       </div>
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        const input = e.currentTarget.querySelector('input');
-        if (input) {
-          fetchChatResponse(input.value);
-          input.value = '';
-        }
-      }}>
-        <input type="text" placeholder="Type a message..." />
-        <button type="submit">Send</button>
-      </form>
+      
+      <div className="chat-main">
+        <div className="messages">
+          {messages.map((msg, i) => (
+            <div key={i} className={`message ${msg.role === 'user' ? 'user-message' : 'assistant-message'}`}>
+              <div className="message-content">{msg.content}</div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="message assistant-message">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+        
+        <div className="input-area">
+          <input
+            type="text"
+            className="message-input"
+            placeholder="Type your message..."
+            disabled={isLoading}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const input = e.currentTarget;
+                if (input.value.trim()) {
+                  fetchChatResponse(input.value);
+                  input.value = '';
+                }
+              }
+            }}
+          />
+          <button
+            className="send-button"
+            onClick={(e) => {
+              e.preventDefault();
+              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+              if (input.value.trim()) {
+                fetchChatResponse(input.value);
+                input.value = '';
+              }
+            }}
+            disabled={isLoading}
+          >
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

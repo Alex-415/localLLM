@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
-      port: 5173,
+      port: 3000,
       proxy: mode === 'development' ? {
         '/api': {
           target: 'http://localhost:4000',
@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
       } : undefined
     },
     preview: {
-      port: 5173,
+      port: 3000,
       host: true,
       allowedHosts: [
         'localhost',

@@ -36,6 +36,7 @@ const allowedOrigins = [
   'https://alex-415.github.io',
   'https://alex-415.github.io/localLLM',
   'http://localhost:5173',
+  'http://localhost:3000',
   'http://localhost:4000',
   'http://localhost',
   'https://localllm.onrender.com',
@@ -195,6 +196,7 @@ app.use((req, res, next) => {
   console.log('Base URL:', req.baseUrl);
   console.log('Original URL:', req.originalUrl);
   console.log('Headers:', req.headers);
+  console.log('Origin:', req.headers.origin);
   next();
 });
 
