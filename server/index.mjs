@@ -25,8 +25,8 @@ console.log('Environment variables:', {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   BASE_URL: process.env.BASE_URL,
-  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ? 'Set' : 'Not Set',
-  OPENROUTER_API_KEY_LENGTH: process.env.OPENROUTER_API_KEY?.length,
+  TOGETHER_API_KEY: process.env.TOGETHER_API_KEY ? 'Set' : 'Not Set',
+  TOGETHER_API_KEY_LENGTH: process.env.TOGETHER_API_KEY?.length,
   JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not Set',
   VITE_API_URL: process.env.VITE_API_URL
 });
@@ -85,6 +85,8 @@ app.options('*', cors());
 // Mount API routes BEFORE static file serving
 app.use('/api', (req, res, next) => {
   console.log('API route accessed:', req.path);
+  console.log('API route method:', req.method);
+  console.log('API route headers:', req.headers);
   next();
 }, chatRouter);
 
@@ -95,7 +97,11 @@ app.use(express.static(path.join(__dirname, '../dist')));
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     console.log('API route not found:', req.path);
-    return res.status(404).json({ error: 'API endpoint not found' });
+    return res.status(404).json({ 
+      error: 'API endpoint not found',
+      path: req.path,
+      method: req.method
+    });
   }
   console.log('Serving index.html for path:', req.path);
   res.sendFile(path.join(__dirname, '../dist/index.html'));
@@ -104,9 +110,12 @@ app.get('*', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+  console.error('Error stack:', err.stack);
   res.status(500).json({
     error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    path: req.path,
+    method: req.method
   });
 });
 
