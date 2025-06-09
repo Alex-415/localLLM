@@ -44,6 +44,18 @@ const allowedOrigins = [
 // Parse JSON bodies
 app.use(express.json({ limit: '10mb' }));
 
+// Add logging middleware for all requests BEFORE routes
+app.use((req, res, next) => {
+  console.log('=== Incoming Request ===');
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Base URL:', req.baseUrl);
+  console.log('Original URL:', req.originalUrl);
+  console.log('Headers:', req.headers);
+  console.log('Origin:', req.headers.origin);
+  next();
+});
+
 // Configure CORS
 app.use(cors({
   origin: function(origin, callback) {
@@ -186,18 +198,6 @@ apiRouter.post('/chat', async (req, res) => {
 // Mount API routes BEFORE static file serving
 app.use('/api', apiRouter);
 
-// Add logging middleware for all requests
-app.use((req, res, next) => {
-  console.log('=== Incoming Request ===');
-  console.log('Method:', req.method);
-  console.log('Path:', req.path);
-  console.log('Base URL:', req.baseUrl);
-  console.log('Original URL:', req.originalUrl);
-  console.log('Headers:', req.headers);
-  console.log('Origin:', req.headers.origin);
-  next();
-});
-
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
 
@@ -205,7 +205,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 app.get('*', (req, res) => {
   // Don't handle API routes here
   if (req.path.startsWith('/api/')) {
-    return next();
+    return res.status(404).json({ error: 'API endpoint not found' });
   }
   console.log('Serving index.html for path:', req.path);
   res.sendFile(path.join(__dirname, '../dist/index.html'));
