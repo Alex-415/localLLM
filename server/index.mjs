@@ -10,6 +10,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '.env') });
 
+// Configure CORS for production
+const allowedOrigins = [
+  'https://localllm.onrender.com',
+  'https://www.localllm.onrender.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:4000',
+  'http://localhost'
+];
+
 // Debug: Log all environment variables
 console.log('Environment variables:', {
   NODE_ENV: process.env.NODE_ENV,
@@ -34,16 +44,6 @@ console.log('Server starting with configuration:', {
     : 'http://localhost:4000'),
   CORS_ALLOWED_ORIGINS: allowedOrigins
 });
-
-// Configure CORS for production
-const allowedOrigins = [
-  'https://localllm.onrender.com',
-  'https://www.localllm.onrender.com',
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:4000',
-  'http://localhost'
-];
 
 // Parse JSON bodies
 app.use(express.json({ limit: '10mb' }));
@@ -89,11 +89,8 @@ app.use(cors({
 // Add OPTIONS handler for preflight requests
 app.options('*', cors());
 
-// Mount API router
-const apiRouter = express.Router();
-
-app.use('/api', chatRouter);
 // Mount API routes BEFORE static file serving
+app.use('/api', chatRouter);
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
