@@ -90,18 +90,33 @@ console.log('Available routes:', chatRouter.stack.map(r => ({
 
 // Mount API routes BEFORE static file serving
 app.use('/api', (req, res, next) => {
-  console.log('API route accessed:', req.path);
-  console.log('API route method:', req.method);
-  console.log('API route headers:', req.headers);
+  console.log('\n=== API Route Access ===');
+  console.log('Time:', new Date().toISOString());
+  console.log('Path:', req.path);
+  console.log('Method:', req.method);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('========================\n');
   next();
 }, chatRouter);
 
 // Debug: Log mounted routes
-console.log('Mounted routes:', app._router.stack.map(r => ({
-  path: r.route?.path,
-  methods: r.route?.methods,
-  regexp: r.regexp?.toString()
-})));
+console.log('\n=== Mounted Routes ===');
+app._router.stack.forEach(r => {
+  if (r.route) {
+    console.log(`Route: ${r.route.path}`);
+    console.log('Methods:', Object.keys(r.route.methods));
+  } else if (r.name === 'router') {
+    console.log('Router mounted at:', r.regexp);
+    r.handle.stack.forEach(layer => {
+      if (layer.route) {
+        console.log(`  Route: ${layer.route.path}`);
+        console.log('  Methods:', Object.keys(layer.route.methods));
+      }
+    });
+  }
+});
+console.log('=====================\n');
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -109,11 +124,19 @@ app.use(express.static(path.join(__dirname, '../dist')));
 // Add a catch-all route for SPA
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
-    console.log('API route not found:', req.path);
+    console.log('\n=== API Route Not Found ===');
+    console.log('Path:', req.path);
+    console.log('Method:', req.method);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('========================\n');
     return res.status(404).json({ 
       error: 'API endpoint not found',
       path: req.path,
-      method: req.method
+      method: req.method,
+      availableRoutes: chatRouter.stack.map(r => ({
+        path: r.route?.path,
+        methods: r.route?.methods
+      }))
     });
   }
   console.log('Serving index.html for path:', req.path);

@@ -8,8 +8,8 @@ services:
       npm install --legacy-peer-deps
       npm install @vitejs/plugin-react --save
       npm run build
-      cd server && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps --no-package-lock
-    startCommand: cd server && node index.mjs
+      cd server && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps
+    startCommand: cd server && NODE_ENV=production node index.mjs
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
