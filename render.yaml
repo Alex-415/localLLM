@@ -5,6 +5,7 @@ services:
     repo: https://github.com/Alex-415/localLLM
     branch: master
     buildCommand: |
+      export VITE_API_URL=https://localllm.onrender.com
       npm install
       npm run build
     startCommand: npm run preview
