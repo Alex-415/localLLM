@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "start": "cd server && node index.mjs"
+    "start": "cd server && node index.mjs",
+    "postinstall": "cd server && npm install"
   },
   "dependencies": {
     "@types/axios": "^0.9.36",
@@ -25,7 +26,11 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
     "together-ai": "0.16.0",
-    "vite": "^5.1.6"
+    "vite": "^5.1.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
@@ -42,10 +47,14 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "gh-pages": "^6.3.0",
     "jsdom": "^24.0.0",
+    "nodemon": "^3.1.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.2.2",
     "vitest": "^1.2.2"
+  },
+  "engines": {
+    "node": "18.17.0"
   }
 }

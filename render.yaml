@@ -3,26 +3,10 @@ services:
     name: kml-production
     env: node
     buildCommand: |
-      # Set Node.js version
-      nvm install 18.17.0
-      nvm use 18.17.0
-      
-      # Clean and install root dependencies
-      rm -rf node_modules package-lock.json
-      npm cache clean --force
+      # Install dependencies and build
       npm install --legacy-peer-deps
-      npm install @vitejs/plugin-react --save
-      
-      # Build frontend
       npm run build
-      
-      # Install server dependencies
-      cd server
-      rm -rf node_modules package-lock.json
-      npm install --legacy-peer-deps
-      npm list express
-      cd ..
-    startCommand: cd server && NODE_ENV=production node index.mjs
+    startCommand: npm start
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
