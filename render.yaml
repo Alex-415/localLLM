@@ -16,7 +16,7 @@ services:
       export VITE_FIREBASE_MEASUREMENT_ID=G-4GBECSBL7G
       npm install
       npm run build
-    startCommand: npm run preview
+    startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
