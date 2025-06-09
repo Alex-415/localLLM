@@ -63,27 +63,15 @@ app.use((req, res, next) => {
 // Configure CORS
 app.use(cors({
   origin: function(origin, callback) {
-    console.log('CORS check for origin:', origin);
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      console.log('No origin provided, allowing request');
-      return callback(null, true);
-    }
-    
-    if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
-      console.log('Origin allowed:', origin);
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
       callback(null, true);
     } else {
-      console.log('Origin blocked:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-  maxAge: 86400 // 24 hours
+  credentials: true
 }));
 
 // Add OPTIONS handler for preflight requests
@@ -97,11 +85,9 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // Add a catch-all route for SPA
 app.get('*', (req, res) => {
-  // Don't handle API routes here
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  console.log('Serving index.html for path:', req.path);
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
