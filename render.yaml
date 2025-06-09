@@ -11,8 +11,16 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: BASE_URL
+        value: https://localllm.onrender.com
       - key: VITE_API_URL
         value: https://localllm.onrender.com
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
       - key: VITE_FIREBASE_API_KEY
         sync: false
       - key: VITE_FIREBASE_AUTH_DOMAIN
@@ -26,12 +34,6 @@ services:
       - key: VITE_FIREBASE_APP_ID
         sync: false
       - key: VITE_FIREBASE_MEASUREMENT_ID
-        sync: false
-      - key: MONGODB_URI
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: OPENROUTER_API_KEY
         sync: false
     healthCheckPath: /api/health
     plan: starter
